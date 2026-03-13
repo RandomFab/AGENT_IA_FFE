@@ -1,0 +1,89 @@
+services:
+  # Database - MongoDB
+  mongodb:
+    image: mongo:7.0
+    container_name: mongodb_ffe
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_ROOT_USER}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_ROOT_PASSWORD}
+    ports:
+      - "${MONGO_PORT}:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - ffe_network
+
+  # Vector Database - Milvus (Standalone)
+  milvus:
+    image: milvusdb/milvus:v2.3.0
+    container_name: milvus_ffe
+    command: ["milvus", "run", "standalone"]
+    environment:
+      ETCD_ENDPOINTS: etcd:2379
+      MINIO_ADDRESS: minio:9000
+    ports:
+      - "${MILVUS_PORT}:19530"
+    depends_on:
+      - etcd
+      - minio
+    networks:
+      - ffe_network
+
+  etcd:
+    image: quay.io/coreos/etcd:v3.5.0
+    container_name: milvus_etcd
+    command: etcd -advertise-client-urls http://127.0.0.1:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd
+    networks:
+      - ffe_network
+
+  minio:
+    image: minio/minio:RELEASE.2023-03-20T20-16-18Z
+    container_name: milvus_minio
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    ports:
+      - "9001:9001"
+      - "9000:9000"
+    command: server /data --console-address ":9001"
+    networks:
+      - ffe_network
+
+  # Backend - FastAPI
+  api:
+    build: .
+    container_name: fastapi_ffe
+    ports:
+      - "${API_PORT}:8000"
+    environment:
+      - MONGO_USER=${MONGO_ROOT_USER}
+      - MONGO_PASSWORD=${MONGO_ROOT_PASSWORD}
+      - MONGO_HOST=${MONGO_HOST}
+      - MONGO_PORT=${MONGO_PORT}
+      - MONGO_DB_NAME=${MONGO_DB_NAME}
+      - MILVUS_HOST=${MILVUS_HOST}
+      - MILVUS_PORT=${MILVUS_PORT}
+    depends_on:
+      - mongodb
+      - milvus
+    networks:
+      - ffe_network
+
+  # # Frontend - Angular
+  # frontend:
+  #   build:
+  #     context: ./frontend
+  #   container_name: angular_ffe
+  #   ports:
+  #     - "4200:4200"
+  #   depends_on:
+  #     - api
+  #   networks:
+  #     - ffe_network
+
+networks:
+  ffe_network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
