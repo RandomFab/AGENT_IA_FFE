@@ -75,26 +75,28 @@ graph TB
 ```
 AGENT_IA_FFE/
 │
-├── 📂 src/
-│   ├── 🌐 api/              # Endpoints FastAPI
-│   ├── 🤖 app/              # Logique de l'agent LangGraph
-│   ├── 🔧 data_prep/        # Préparation et ingestion des données
-│   ├── 📊 feature/          # Extraction de features
-│   └── 🤖 model/            # Modèles et intégrations
+├── 📂 backend/              # Application FastAPI & Logique Agent
+│   ├── 🌐 api/              # Endpoints FastAPI (main.py)
+│   ├── 🧠 graph/            # Workflow LangGraph de l'agent
+│   ├── 📜 schemas/          # Modèles Pydantic / Validation
+│   ├── 🛠️ services/         # Logique métier et outils (API Lichess, YouTube)
+│   ├── 📁 vector_db/        # Intégration Milvus / Recherche vectorielle
+│   └── 🐳 Dockerfile        # Image Docker spécialisée Backend (Python 3.13)
 │
-├── ⚙️ config/
-│   ├── config.py            # Chemins, palettes, URIs
+├── 📂 frontend/             # Interface interactive Angular
+│   └── 🐳 Dockerfile        # Image Docker spécialisée Frontend (Node.js)
+│
+├── ⚙️ config/               # Paramètres globaux
+│   ├── config.py            # Chemins, URIs, Variables d'env
 │   └── logger.py            # Configuration du logging
 │
-├── 📂 data/
-│   ├── raw/                 # Données brutes
-│   ├── processed/           # Données transformées
-│   └── external/            # Données externes
-│
+├── 📂 data/                 # Stockage des données locales (si applicable)
 ├── 🧪 tests/                # Tests unitaires et d'intégration
 ├── 📜 scripts/              # Scripts utilitaires
-├── pyproject.toml           # Configuration du projet Python
-└── README.md
+├── 🐳 docker-compose.yml    # Orchestration multi-services (API, MongoDB, Milvus)
+├── 🔑 .env                  # Variables d'environnement (non versionné)
+├── 📦 pyproject.toml        # Dépendances Python (uv)
+└── 📜 uv.lock               # Verrouillage des versions
 ```
 
 ---
