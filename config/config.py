@@ -37,6 +37,3 @@ PALETTE = [
     "#18534F",
     "#696969",
 ]
-
-FEN_EXAMPLE = os.getenv("FEN_EXAMPLE")
-STOCKFISH_DEPTH = os.getenv("STOCKFISH_DEPTH", 5)
