@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from typing import List,Optional
 
-class FenInput(BaseModel):
+class LichessInput(BaseModel):
     fen: str
 
 class PrincipalVariation(BaseModel):

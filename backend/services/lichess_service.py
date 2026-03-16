@@ -6,10 +6,10 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-FEN_EXAMPLE = "r1bqkbnr/pppp1ppp/2n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 3 3"
+from config.config import FEN_EXAMPLE
 
 
-def get_opening_evaluation(fen: str = FEN_EXAMPLE) -> dict:
+def evaluate_opening(fen: str = os.getenv('FEN_EXAMPLE')) -> dict:
     """Fait un appel à l'API Lichess dans le but de récupérer le meilleur coup à jouer suivant une position envoyée
 
     Args:
@@ -59,5 +59,5 @@ def get_opening_evaluation(fen: str = FEN_EXAMPLE) -> dict:
 
 
 if __name__ == "__main__":
-    response = get_opening_evaluation()
+    response = evaluate_opening()
     print(response)
