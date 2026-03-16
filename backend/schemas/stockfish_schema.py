@@ -10,9 +10,11 @@ class StockfishInput(BaseModel):
         description = "Position au format FEN"
     )
     depth: int = Field(
+        ge=0,
+        le=15,
         example=5,
         default=5,
-        description="Profondeur d'analyse"
+        description="Profondeur d'analyse (0-15)"
     )
 
 class StockfishEvaluationResponse(BaseModel):
