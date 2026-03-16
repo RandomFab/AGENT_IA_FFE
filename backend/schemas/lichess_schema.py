@@ -1,6 +1,7 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field,field_validator
 from typing import List, Optional
 import os
+from backend.services.validation_chess_service import validate_position
 
 
 class LichessInput(BaseModel):
@@ -10,6 +11,14 @@ class LichessInput(BaseModel):
         example= os.getenv('FEN_EXAMPLE'),
         description="Position au format FEN"
     )
+
+    @field_validator('fen')
+    @classmethod
+    def validate_fen(cls, v):
+        validation = validate_position(v)
+        if not validation['status']:
+            raise ValueError(validation["message"])
+        return v
 
 class PrincipalVariation(BaseModel):
     """Schéma pour une variation principale d'une position."""
