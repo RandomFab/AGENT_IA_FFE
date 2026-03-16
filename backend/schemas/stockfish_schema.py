@@ -17,8 +17,8 @@ class StockfishInput(BaseModel):
 
 class StockfishEvaluationResponse(BaseModel):
     """Schéma de validation pour une réponse d'évaluation Stockfish."""
-    success: bool
-    evaluation: float
-    mate: int
-    bestmove: str
-    continuation: str
+    success: Optional[bool] = None
+    evaluation: Optional[float] = None
+    mate: Optional[int] = None
+    bestmove: Optional[str] = None
+    continuation: Optional[str] = None
