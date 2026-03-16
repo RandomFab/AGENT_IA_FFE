@@ -1,7 +1,7 @@
-from pydantic import BaseModel, Field,field_validator
+from pydantic import BaseModel, Field,field_validator,model_validator
 from typing import List, Optional
 import os
-from backend.services.validation_chess_service import validate_position
+from backend.services.validation_chess_service import validate_position,validate_move
 
 
 class LichessInput(BaseModel):
@@ -31,3 +31,12 @@ class LichessEvaluationResponse(BaseModel):
     knodes: int
     depth: int
     pvs: List[PrincipalVariation]
+
+    @model_validator(mode='after')
+    def validate_moves_from_api(self):
+        """Valide que tous les moves retournés par l'API sont légaux."""
+        for pv in self.pvs:
+            next_move = pv.moves.split(" ")
+            if not validate_move(self.fen, next_move):
+                raise ValueError(f"Move illégal retourné par l'API: {next_move}")
+        return self

@@ -40,4 +40,5 @@ def get_stockfish_evaluation(stockfish_input: StockfishInput):
         StockfishEvaluationResponse: Évaluation et meilleur coup
     """
     response = evaluate_position(fen=stockfish_input.fen, depth=stockfish_input.depth)
+    response['fen'] = stockfish_input.fen  # ← Ajouter le FEN
     return response
