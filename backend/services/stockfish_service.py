@@ -1,3 +1,5 @@
+# --- Interactions avec API stockfish ---
+
 import requests
 import os
 from config.logger import logger
