@@ -9,7 +9,7 @@ load_dotenv()
 from config.config import FEN_EXAMPLE
 
 
-def evaluate_opening(fen: str = os.getenv('FEN_EXAMPLE')) -> dict:
+def evaluate_opening(fen: str = FEN_EXAMPLE) -> dict:
     """Fait un appel à l'API Lichess dans le but de récupérer le meilleur coup à jouer suivant une position envoyée
 
     Args:
