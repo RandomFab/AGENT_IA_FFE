@@ -101,7 +101,35 @@ AGENT_IA_FFE/
 
 ---
 
-## 🚀 Installation
+##  Utilisation & API Endpoints
+
+Une fois le serveur lancé (`uv run uvicorn backend.api.main:api --reload`), la documentation Swagger est accessible sur **`http://127.0.0.1:8000/docs`**.
+
+### 1. Obtenir les meilleurs coups depuis la théorie (Lichess)
+```bash
+curl -X 'POST' \
+  'http://127.0.0.1:8000/api/v1/moves' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "fen": "r1bqkbnr/pppp1ppp/2n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 3 3"
+}'
+```
+
+### 2. Évaluer une position hors théorie (Stockfish)
+```bash
+curl -X 'POST' \
+  'http://127.0.0.1:8000/api/v1/evaluate' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "fen": "r1bqkbnr/pppp1ppp/2n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 3 3",
+  "depth": 5
+}'
+```
+> 💡 *Note : Les positions (FEN) entrantes et les coups renvoyés par les API sont validés en amont/aval via la bibliothèque `python-chess`.*
+
+---
+
+## Installation
 
 ### Prérequis
 
