@@ -51,7 +51,9 @@ services:
 
   # Backend - FastAPI
   api:
-    build: .
+    build:
+      context: .
+      dockerfile: Backend/Dockerfile
     container_name: fastapi_ffe
     ports:
       - "${API_PORT}:8000"
