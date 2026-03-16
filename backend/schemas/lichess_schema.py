@@ -1,9 +1,15 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import List, Optional
+import os
+
 
 class LichessInput(BaseModel):
     """Schéma de validation pour une requête d'évaluation Lichess."""
-    fen: str
+    fen: str = Field(
+        ...,
+        example= os.getenv('FEN_EXAMPLE'),
+        description="Position au format FEN"
+    )
 
 class PrincipalVariation(BaseModel):
     """Schéma pour une variation principale d'une position."""
