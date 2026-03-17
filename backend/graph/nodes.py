@@ -9,7 +9,6 @@ from config.logger import logger
 
 # --- Lichess Node ---
 
-
 def node_lichess(state: AgentState):
     """
     Nœud de consultation de la base théorique Lichess.
@@ -31,19 +30,18 @@ def node_lichess(state: AgentState):
         validated_response = LichessEvaluationResponse(**raw_data)
 
         # Extraction du meilleur coup
-        best_move = validated_response.pvs[0]['moves']
+        best_move = validated_response.pvs[0].moves
         logger.info(f"[NODE LICHESS] ✓ Succès - Théorie trouvée: {best_move}")
 
-        return {"lichess_evaluaton": best_move}
+        return {"lichess_evaluation": best_move}
 
     except Exception as e:
         logger.error(f"[NODE LICHESS] ✗ Erreur validation: {str(e)}")
         logger.warning("[NODE LICHESS] Falling back vers Stockfish...")
-        return {"lichess_evaluaton": None}
+        return {"lichess_evaluation": None}
 
 
 # --- Stockfish Node ---
-
 
 def node_stockfish(state: AgentState):
     """
@@ -58,14 +56,18 @@ def node_stockfish(state: AgentState):
         logger.debug("[NODE STOCKFISH] Appel du service Stockfish avec depth=10...")
         raw_data = evaluate_position(fen=fen, depth=10)
         logger.debug(f"[NODE STOCKFISH] Réponse brute reçue: {type(raw_data)}")
-        
+
         # Gestion de l'erreur retournée par l'API
         if "error" in raw_data:
-            logger.warning(f"[NODE STOCKFISH] API a retourné une erreur: {raw_data.get('error')}")
+            logger.warning(
+                f"[NODE STOCKFISH] API a retourné une erreur: {raw_data.get('error')}"
+            )
             return {"stockfish_evaluation": None}
 
         # Validation de la réponse avec le schéma Pydantic
-        logger.debug("[NODE STOCKFISH] Validation de la réponse avec StockfishEvaluationResponse...")
+        logger.debug(
+            "[NODE STOCKFISH] Validation de la réponse avec StockfishEvaluationResponse..."
+        )
         validated_response = StockfishEvaluationResponse(**raw_data)
 
         # Extraction du meilleur coup
@@ -73,7 +75,7 @@ def node_stockfish(state: AgentState):
         logger.info(f"[NODE STOCKFISH] ✓ Succès - Coup analysé: {best_move}")
 
         return {"stockfish_evaluation": best_move}
-    
+
     except ValueError as e:
         logger.error(f"[NODE STOCKFISH] ✗ Erreur validation (ValueError): {str(e)}")
         return {"stockfish_evaluation": None}
@@ -81,3 +83,22 @@ def node_stockfish(state: AgentState):
         logger.error(f"[NODE STOCKFISH] ✗ Erreur inattendue: {str(e)}", exc_info=True)
         return {"stockfish_evaluation": None}
 
+
+# --- Fromatteer Node ---
+
+def node_format_response(state: AgentState):
+    """Formate la réponse finale pour l'utilisateur."""
+    logger.info("[NODE FORMATTER] Début de formatage de la réponse")
+
+    lichess_evaluation = state.get("lichess_evaluation")
+    stockfish_evaluation = state.get("stockfish_evaluation")
+
+    if lichess_evaluation:
+        final_answer = f"Position connue. Théorie: {lichess_evaluation}"
+    elif stockfish_evaluation:
+        final_answer = f"Analyse Stockfish: {stockfish_evaluation}"
+    else:
+        final_answer = "Aucune réponse trouvée"
+
+    logger.info(f"[NODE FORMATTER] ✓ Réponse formatée")
+    return {"final_answer": final_answer}
