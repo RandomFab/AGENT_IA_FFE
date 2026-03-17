@@ -96,9 +96,50 @@ def ingest_chess_openings_to_milvus(urls: list[str]) -> dict:
             "error": str(e)
         }
 
+
+## --- retrieval ---
+
+def retrieve_articles(request_text: str, collection_name: str = "chess_openings") -> list[dict]:
+    """Recherche les articles similaires dans Milvus.
+    
+    Args:
+        request_text: Texte à rechercher
+        collection_name: Nom de la collection (défaut: chess_openings)
+        
+    Returns:
+        Liste de dictionnaires avec les résultats (title, text, url, similarity)
+    """
+    logger.info(f"🔍 Recherche d'articles pour : {request_text[:50]}...")
+    
+    try:
+        # Embedding du texte de requête
+        embed_model = _get_embedding_model()
+        vector = embed_model.encode(request_text, show_progress_bar=False)
+        
+        # Recherche dans Milvus
+        client = MilvusClient(INDEX_WIKIPEDIA_DIR)
+        try:
+            res = client.search(
+                collection_name=collection_name,
+                data=[vector],
+                limit=2,
+                output_fields=["title", "text", "url"],
+            )
+            logger.info(f"✅ {len(res)} résultats trouvés")
+            return res
+        finally:
+            client.close()
+            logger.debug("🔌 Connexion Milvus fermée")
+            
+    except Exception as e:
+        logger.error(f"❌ Erreur recherche RAG: {str(e)}")
+        return []
+
+
+
 # --- Sous fontions ---
 
-## --- Extraction des noms depuis les liens WikiPedia ---
+    ## --- Extraction des noms depuis les liens WikiPedia ---
 
 def _extract_title(url: str) -> str:
     """Extrait le titre propre depuis l'URL Wikipedia.
@@ -113,7 +154,7 @@ def _extract_title(url: str) -> str:
     return urllib.parse.unquote(title_encoded).replace("_", " ")
 
 
-## --- Extraction des articles ---
+    ## --- Extraction des articles ---
 
 def _extract_wikipedia_articles(urls: list[str]) -> list[Document]:
     """Récupère et charge les articles Wikipedia depuis les URLs.
@@ -148,7 +189,7 @@ def _extract_wikipedia_articles(urls: list[str]) -> list[Document]:
     return documents
 
 
-## --- Transformation des texts en chunks ---
+    ## --- Transformation des texts en chunks ---
 
 def _chunk_wikipedia_articles(documents: list[Document]) -> list[Document]:
     """Découpe les documents Wikipedia en chunks intelligents.
@@ -174,7 +215,7 @@ def _chunk_wikipedia_articles(documents: list[Document]) -> list[Document]:
     return all_chunks
 
 
-## --- Transformation des chunks en embeddings ---
+    ## --- Chargement du model embed ---
 
 _embedding_model = None  # Cache global pour éviter rechargement du modèle
 
@@ -198,6 +239,8 @@ def _get_embedding_model(model_name: str = 'Qwen/qwen3B-embedding-0.6B') -> Sent
             raise
     return _embedding_model
 
+
+    ## --- Transformation des chunks en embeddings ---
 
 def _embed_chunks(chunks: list[Document], model_name: str = 'Qwen/qwen3B-embedding-0.6B') -> list[dict]:
     """Génère les embeddings et prépare les données pour Milvus.
@@ -227,7 +270,7 @@ def _embed_chunks(chunks: list[Document], model_name: str = 'Qwen/qwen3B-embeddi
         model = _get_embedding_model(model_name)
         
         # Générer les embeddings
-        vectors = model.encode(texts, show_progress_bar=True)
+        vectors = model.encode(texts, show_progress_bar=False)
         
         # Préparer les données pour Milvus
         milvus_data = [
@@ -251,13 +294,14 @@ def _embed_chunks(chunks: list[Document], model_name: str = 'Qwen/qwen3B-embeddi
         logger.error(f"❌ Erreur lors de la génération d'embeddings: {str(e)}")
         raise
 
-## --- Chargement des vecteurs dans Milvus ---
+    ## --- Chargement des vecteurs dans Milvus ---
 
-def _load_vectors_in_vector_store(data: list[dict]) -> dict:
+def _load_vectors_in_vector_store(data: list[dict], collection_name: str = "chess_openings") -> dict:
     """Insère les vecteurs dans la collection Milvus.
     
     Args:
         data: Liste de dictionnaires {id, embedding, text, source, title}
+        collection_name: Nom de la collection (défaut: chess_openings)
         
     Returns:
         Résultat de l'insertion {inserted_count, errors}
@@ -274,9 +318,9 @@ def _load_vectors_in_vector_store(data: list[dict]) -> dict:
         logger.info(f"📤 Connexion à Milvus ({INDEX_WIKIPEDIA_DIR})")
         client = MilvusClient(INDEX_WIKIPEDIA_DIR)
         
-        logger.info(f"📝 Insertion de {len(data)} vecteurs dans 'wikipedia_collection'...")
+        logger.info(f"📝 Insertion de {len(data)} vecteurs dans '{collection_name}'...")
         result = client.insert(
-            collection_name="wikipedia_collection",
+            collection_name=collection_name,
             data=data
         )
         
