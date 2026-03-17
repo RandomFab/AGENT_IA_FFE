@@ -2,9 +2,11 @@ from fastapi import APIRouter
 
 from backend.services.lichess_service import evaluate_opening
 from backend.services.stockfish_service import evaluate_position
+from backend.services.rag_service import retrieve_articles
 from backend.schemas.lichess_schema import LichessEvaluationResponse, LichessInput
 from backend.schemas.stockfish_schema import StockfishEvaluationResponse, StockfishInput
 from backend.schemas.agent_schema import AgentResponse
+from backend.schemas.rag_schema import RAGSearchInput,RAGSearchResult
 from backend.graph.state import AgentState
 from backend.graph.agent import app
 
@@ -71,3 +73,17 @@ def call_chess_agent(agent_input: StockfishInput):
         lichess_evaluation=result.get("lichess_evaluation"),
         stockfish_evaluation=result.get("stockfish_evaluation"),
     )
+
+
+@router.post("/retrieve", response_model=list[RAGSearchResult], tags=["RAG"])
+def search_rag(rag_input: RAGSearchInput):
+    """Recherche des articles similaires via RAG (Retrieval Augmented Generation).
+
+    Args:
+        rag_input: Texte à rechercher et nombre de résultats souhaités
+
+    Returns:
+        Liste de résultats avec similarité et métadonnées (title, text, source)
+    """
+    results = retrieve_articles(request_text=rag_input.query)
+    return results
