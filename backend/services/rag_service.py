@@ -123,10 +123,26 @@ def retrieve_articles(request_text: str, collection_name: str = "chess_openings"
                 collection_name=collection_name,
                 data=[vector],
                 limit=2,
-                output_fields=["title", "text", "url"],
+                output_fields=["title", "text", "source"],
             )
-            logger.info(f"✅ {len(res)} résultats trouvés")
-            return res
+            
+            # Extraction et formatage des résultats car Milvus renvoie une liste de listes
+            formatted_results = []
+            if res and len(res) > 0:
+                # res[0] car on a envoyé un seul vecteur (data=[vector])
+                for hit in res[0]:
+                    # Les champs sont parfois dans "entity" selon la version de Pymilvus
+                    entity = hit.get("entity", hit)
+                    formatted_results.append({
+                        "id": hit.get("id"),
+                        "distance": hit.get("distance"),
+                        "title": entity.get("title", "N/A"),
+                        "text": entity.get("text", ""),
+                        "source": entity.get("source", "")
+                    })
+                    
+            logger.info(f"✅ {len(formatted_results)} résultats trouvés")
+            return formatted_results
         finally:
             client.close()
             logger.debug("🔌 Connexion Milvus fermée")

@@ -4,6 +4,7 @@ from backend.services.lichess_service import evaluate_opening
 from backend.services.stockfish_service import evaluate_position
 from backend.schemas.lichess_schema import LichessEvaluationResponse
 from backend.schemas.stockfish_schema import StockfishEvaluationResponse
+from backend.services.rag_service import retrieve_articles
 
 from config.logger import logger
 
@@ -83,8 +84,46 @@ def node_stockfish(state: AgentState):
         logger.error(f"[NODE STOCKFISH] ✗ Erreur inattendue: {str(e)}", exc_info=True)
         return {"stockfish_evaluation": None}
 
+# --- Milvus Node ---
 
-# --- Fromatteer Node ---
+def node_milvus_search(state: AgentState):
+    """
+    Nœud de recherche RAG pour enrichir l'analyse avec des articles Milvus.
+    Utilise l'évaluation Lichess ou Stockfish comme requête de recherche.
+    """
+    logger.info("[NODE MILVUS] Début de recherche RAG...")
+    
+    try:
+        # Déterminer le texte de recherche (priorité: Lichess, sinon Stockfish)
+        search_query = state.get("lichess_evaluation") or state.get("stockfish_evaluation")
+        
+        if not search_query:
+            logger.warning("[NODE MILVUS] ⚠️ Aucune évaluation disponible pour la recherche")
+            return {"milvus_context": None}
+        
+        logger.debug(f"[NODE MILVUS] Requête de recherche: {str(search_query)[:50]}...")
+        
+        # Rechercher les articles similaires
+        results = retrieve_articles(search_query)
+        
+        if results:
+            logger.info(f"[NODE MILVUS] ✓ {len(results)} articles trouvés")
+            # Formater le contexte pour le formatter final
+            context = "\n".join([
+                f"- {r.get('title', 'N/A')}: {r.get('text', '')[:100]}..."
+                for r in results
+            ])
+            return {"milvus_context": context}
+        else:
+            logger.warning("[NODE MILVUS] ⚠️ Aucun article trouvé")
+            return {"milvus_context": None}
+    
+    except Exception as e:
+        logger.error(f"[NODE MILVUS] ✗ Erreur recherche RAG: {str(e)}")
+        return {"milvus_context": None}
+
+
+# --- Fromatter Node ---
 
 def node_format_response(state: AgentState):
     """Formate la réponse finale pour l'utilisateur."""
