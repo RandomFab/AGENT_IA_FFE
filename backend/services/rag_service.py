@@ -9,7 +9,31 @@ from pymilvus import MilvusClient
 from config.logger import logger
 from config.config import INDEX_WIKIPEDIA_DIR
 
-# --- Fonction principale --- 
+# --- Fonctions principales --- 
+
+## --- Verification existance db milvus ---
+def is_milvus_collection_exists(collection_name: str = "chess_openings") -> bool:
+    """Vérifie si la collection Milvus existe et contient des données."""
+    try:
+        from pymilvus import connections, utility
+        # Se connecter à Milvus
+        connections.connect("default", host="localhost", port=19530)
+        
+        # Vérifier si la collection existe
+        if utility.has_collection(collection_name):
+            collection_info = utility.get_collection_stats(collection_name)
+            row_count = collection_info.get("row_count", 0)
+            logger.info(f"✅ Collection '{collection_name}' existe avec {row_count} entrées")
+            return row_count > 0
+        else:
+            logger.info(f"❌ Collection '{collection_name}' n'existe pas")
+            return False
+    except Exception as e:
+        logger.error(f"Erreur connexion Milvus: {str(e)}")
+        return False
+
+
+## --- ingestion de la donnée ---
 
 def ingest_chess_openings_to_milvus(urls: list[str]) -> dict:
     """Pipeline complet d'ingestion : extraction → chunking → embedding → Milvus.
