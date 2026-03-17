@@ -40,5 +40,3 @@ workflow.add_edge("formatter", END)
 
 # Compile workflow
 app = workflow.compile()
-
-print(app.get_graph().draw_ascii())
