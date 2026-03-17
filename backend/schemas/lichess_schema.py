@@ -36,7 +36,8 @@ class LichessEvaluationResponse(BaseModel):
     def validate_moves_from_api(self):
         """Valide que tous les moves retournés par l'API sont légaux."""
         for pv in self.pvs:
-            next_move = pv.moves.split(" ")
-            if not validate_move(self.fen, next_move):
+            next_move = pv.moves.split(" ")[0]
+            validation = validate_move(self.fen, next_move)
+            if not validation['status']:
                 raise ValueError(f"Move illégal retourné par l'API: {next_move}")
         return self
