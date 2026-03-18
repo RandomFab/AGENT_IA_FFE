@@ -1,0 +1,3 @@
+from backend.services.rag_service import ingest_chess_openings_to_milvus
+from config.config import WIKIPEDIA_OPENING_CHESS_URLS
+result = ingest_chess_openings_to_milvus(WIKIPEDIA_OPENING_CHESS_URLS)

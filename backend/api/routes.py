@@ -85,5 +85,5 @@ def search_rag(rag_input: RAGSearchInput):
     Returns:
         Liste de résultats avec similarité et métadonnées (title, text, source)
     """
-    results = retrieve_articles(request_text=rag_input.query)
+    results = retrieve_articles(request_text=rag_input.query, limit=rag_input.limit)
     return results

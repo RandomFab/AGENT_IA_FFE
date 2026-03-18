@@ -100,12 +100,13 @@ def ingest_chess_openings_to_milvus(urls: list[str]) -> dict:
 
 ## --- retrieval ---
 
-def retrieve_articles(request_text: str, collection_name: str = "chess_openings") -> list[dict]:
+def retrieve_articles(request_text: str, collection_name: str = "chess_openings", limit: int = 2) -> list[dict]:
     """Recherche les articles similaires dans Milvus.
     
     Args:
         request_text: Texte à rechercher
         collection_name: Nom de la collection (défaut: chess_openings)
+        limit: Nombre de résultats à retourner (défaut: 2)
         
     Returns:
         Liste de dictionnaires avec les résultats (title, text, url, similarity)
@@ -125,7 +126,7 @@ def retrieve_articles(request_text: str, collection_name: str = "chess_openings"
             res = client.search(
                 collection_name=collection_name,
                 data=[vector],
-                limit=2,
+                limit=limit,
                 output_fields=["title", "text", "source"],
             )
             
@@ -238,7 +239,7 @@ def _chunk_wikipedia_articles(documents: list[Document]) -> list[Document]:
 
 _embedding_model = None  # Cache global pour éviter rechargement du modèle
 
-def _get_embedding_model(model_name: str = 'sentence-transformers/all-mpnet-base-v2') -> SentenceTransformer:
+def _get_embedding_model(model_name: str = 'sentence-transformers/all-MiniLM-L6-v2') -> SentenceTransformer:
     """Retourne le modèle d'embedding en cache (singleton).
     
     Args:
@@ -261,7 +262,7 @@ def _get_embedding_model(model_name: str = 'sentence-transformers/all-mpnet-base
 
     ## --- Transformation des chunks en embeddings ---
 
-def _embed_chunks(chunks: list[Document], model_name: str = 'sentence-transformers/all-mpnet-base-v2') -> list[dict]:
+def _embed_chunks(chunks: list[Document]) -> list[dict]:
     """Génère les embeddings et prépare les données pour Milvus.
     
     Args:
@@ -286,7 +287,7 @@ def _embed_chunks(chunks: list[Document], model_name: str = 'sentence-transforme
         texts = [chunk.page_content for chunk in chunks]
         
         # Charger le modèle
-        model = _get_embedding_model(model_name)
+        model = _get_embedding_model()
         
         # Générer les embeddings
         vectors = model.encode(texts, show_progress_bar=False)
@@ -342,10 +343,10 @@ def _load_vectors_in_vector_store(data: list[dict], collection_name: str = "ches
         # Vérifier si la collection existe, sinon la créer
         if not client.has_collection(collection_name):
             logger.info(f"Création de la collection '{collection_name}'...")
-            # La dimension de l'embedding mpnet est de 768. 
+            # La dimension de l'embedding all-MiniLM-L6-v2 est de 384. 
             client.create_collection(
                 collection_name=collection_name, 
-                dimension=768  # 768 est la dimension de all-mpnet-base-v2
+                dimension=384  # 384 est la dimension de all-MiniLM-L6-v2
             )
             logger.info(f"✅ Collection '{collection_name}' créée avec succès")
         else:
