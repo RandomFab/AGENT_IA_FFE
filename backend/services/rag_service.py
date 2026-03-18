@@ -15,14 +15,15 @@ from config.config import INDEX_WIKIPEDIA_DIR
 def is_milvus_collection_exists(collection_name: str = "chess_openings") -> bool:
     """Vérifie si la collection Milvus existe et contient des données."""
     try:
-        from pymilvus import connections, utility
+        import os
+        from pymilvus import connections, utility, Collection
         # Se connecter à Milvus
-        connections.connect("default", host="localhost", port=19530)
+        connections.connect("default", host=os.getenv("MILVUS_HOST", "localhost"), port=os.getenv("MILVUS_PORT", "19530"))
         
         # Vérifier si la collection existe
         if utility.has_collection(collection_name):
-            collection_info = utility.get_collection_stats(collection_name)
-            row_count = collection_info.get("row_count", 0)
+            collection = Collection(collection_name)
+            row_count = collection.num_entities
             logger.info(f"✅ Collection '{collection_name}' existe avec {row_count} entrées")
             return row_count > 0
         else:
@@ -117,7 +118,9 @@ def retrieve_articles(request_text: str, collection_name: str = "chess_openings"
         vector = embed_model.encode(request_text, show_progress_bar=False)
         
         # Recherche dans Milvus
-        client = MilvusClient(INDEX_WIKIPEDIA_DIR)
+        import os
+        milvus_uri = f"http://{os.getenv('MILVUS_HOST', 'localhost')}:{os.getenv('MILVUS_PORT', '19530')}"
+        client = MilvusClient(milvus_uri)
         try:
             res = client.search(
                 collection_name=collection_name,
@@ -235,7 +238,7 @@ def _chunk_wikipedia_articles(documents: list[Document]) -> list[Document]:
 
 _embedding_model = None  # Cache global pour éviter rechargement du modèle
 
-def _get_embedding_model(model_name: str = 'Qwen/qwen3B-embedding-0.6B') -> SentenceTransformer:
+def _get_embedding_model(model_name: str = 'sentence-transformers/all-mpnet-base-v2') -> SentenceTransformer:
     """Retourne le modèle d'embedding en cache (singleton).
     
     Args:
@@ -258,7 +261,7 @@ def _get_embedding_model(model_name: str = 'Qwen/qwen3B-embedding-0.6B') -> Sent
 
     ## --- Transformation des chunks en embeddings ---
 
-def _embed_chunks(chunks: list[Document], model_name: str = 'Qwen/qwen3B-embedding-0.6B') -> list[dict]:
+def _embed_chunks(chunks: list[Document], model_name: str = 'sentence-transformers/all-mpnet-base-v2') -> list[dict]:
     """Génère les embeddings et prépare les données pour Milvus.
     
     Args:
@@ -292,7 +295,7 @@ def _embed_chunks(chunks: list[Document], model_name: str = 'Qwen/qwen3B-embeddi
         milvus_data = [
             {
                 "id": i,
-                "embedding": embedding.tolist(),
+                "vector": embedding.tolist(),
                 "text": chunk.page_content,
                 "source": chunk.metadata.get("source", ""),
                 "title": chunk.metadata.get("title", "")
@@ -331,9 +334,23 @@ def _load_vectors_in_vector_store(data: list[dict], collection_name: str = "ches
     
     client = None
     try:
-        logger.info(f"📤 Connexion à Milvus ({INDEX_WIKIPEDIA_DIR})")
-        client = MilvusClient(INDEX_WIKIPEDIA_DIR)
+        import os
+        milvus_uri = f"http://{os.getenv('MILVUS_HOST', 'localhost')}:{os.getenv('MILVUS_PORT', '19530')}"
+        logger.info(f"📤 Connexion à Milvus ({milvus_uri})")
+        client = MilvusClient(milvus_uri)
         
+        # Vérifier si la collection existe, sinon la créer
+        if not client.has_collection(collection_name):
+            logger.info(f"Création de la collection '{collection_name}'...")
+            # La dimension de l'embedding mpnet est de 768. 
+            client.create_collection(
+                collection_name=collection_name, 
+                dimension=768  # 768 est la dimension de all-mpnet-base-v2
+            )
+            logger.info(f"✅ Collection '{collection_name}' créée avec succès")
+        else:
+            logger.info(f"📌 La collection '{collection_name}' existe déjà")
+
         logger.info(f"📝 Insertion de {len(data)} vecteurs dans '{collection_name}'...")
         result = client.insert(
             collection_name=collection_name,
