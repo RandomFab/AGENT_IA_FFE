@@ -86,7 +86,7 @@ def node_stockfish(state: AgentState):
 
 # --- Milvus Node ---
 
-def node_milvus_search(state: AgentState):
+def node_wikipedia_search(state: AgentState):
     """
     Nœud de recherche RAG pour enrichir l'analyse avec des articles Milvus.
     Utilise l'évaluation Lichess ou Stockfish comme requête de recherche.
