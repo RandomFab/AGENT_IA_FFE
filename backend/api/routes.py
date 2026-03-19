@@ -3,7 +3,7 @@ from fastapi import APIRouter
 from backend.services.lichess_service import evaluate_opening
 from backend.services.stockfish_service import evaluate_position
 from backend.services.rag_service import retrieve_articles
-from backend.schemas.lichess_schema import LichessEvaluationResponse, LichessInput
+from backend.schemas.lichess_schema import LichessOpeningWithGamesResponse, LichessInput
 from backend.schemas.stockfish_schema import StockfishEvaluationResponse, StockfishInput
 from backend.schemas.agent_schema import AgentResponse
 from backend.schemas.rag_schema import RAGSearchInput,RAGSearchResult
@@ -15,7 +15,7 @@ router = APIRouter(prefix="/api/v1")
 
 
 @router.post(
-    "/moves", response_model=LichessEvaluationResponse, tags=["Lichess"]
+    "/opening", response_model=LichessOpeningWithGamesResponse, tags=["Lichess"]
 )
 def get_lichess_moves(lichess_input: LichessInput):
     """Récupère les meilleurs coups d'une position via Lichess.
