@@ -1,6 +1,6 @@
 import os
 import requests
-from typing import Optional, Dict, Any, List
+from typing import List
 from dotenv import load_dotenv
 from backend.schemas.youtube_schema import YoutubeVideoOutput
 
@@ -8,7 +8,7 @@ from backend.schemas.youtube_schema import YoutubeVideoOutput
 load_dotenv()
 
 
-def get_ytb_video(opening: str, max_results: int = 25) -> List[YoutubeVideoOutput] | Dict[str, Any]:
+def get_ytb_video(opening: str, max_results: int = 25) -> List[YoutubeVideoOutput]:
     """
     Recherche des vidéos YouTube sur une ouverture d'échecs.
     
@@ -17,16 +17,19 @@ def get_ytb_video(opening: str, max_results: int = 25) -> List[YoutubeVideoOutpu
         max_results: Nombre maximum de résultats (défaut: 25)
     
     Returns:
-        Dict contenant les résultats ou un message d'erreur
+        Liste de YoutubeVideoOutput
+        
+    Raises:
+        ValueError: Si la clé API n'est pas configurée
+        TimeoutError: Si la requête YouTube expire
+        ConnectionError: Si la connexion échoue
+        Exception: Pour les erreurs API YouTube
     """
     
     # 1. Vérifier les variables d'environnement
     api_key = os.getenv("YOUTUBE_API_KEY")
     if not api_key:
-        return {
-            "error": "YOUTUBE_API_KEY not configured in environment variables",
-            "statusCode": 400
-        }
+        raise ValueError("YOUTUBE_API_KEY not configured in environment variables")
     
     # 2. Configurer la requête
     url = "https://www.googleapis.com/youtube/v3/search"
@@ -46,11 +49,8 @@ def get_ytb_video(opening: str, max_results: int = 25) -> List[YoutubeVideoOutpu
         # 3. Vérifier le code de statut HTTP
         if response.status_code != 200:
             error_data = response.json().get("error", {})
-            return {
-                "error": error_data.get("message", "Unknown API error"),
-                "statusCode": response.status_code,
-                "details": error_data
-            }
+            error_message = error_data.get("message", "Unknown API error")
+            raise Exception(f"YouTube API error ({response.status_code}): {error_message}")
     
         data = response.json()
         
@@ -72,22 +72,10 @@ def get_ytb_video(opening: str, max_results: int = 25) -> List[YoutubeVideoOutpu
     
     # 4. Gestion spécifique des erreurs de connexion
     except requests.exceptions.Timeout:
-        return {
-            "error": "Request timeout - YouTube API took too long to respond",
-            "statusCode": 504
-        }
+        raise TimeoutError("YouTube API took too long to respond")
     except requests.exceptions.ConnectionError:
-        return {
-            "error": "Connection error - Could not reach YouTube API",
-            "statusCode": 503
-        }
+        raise ConnectionError("Could not reach YouTube API")
     except requests.exceptions.RequestException as e:
-        return {
-            "error": f"Request error: {str(e)}",
-            "statusCode": 500
-        }
+        raise Exception(f"YouTube API request error: {str(e)}")
     except Exception as e:
-        return {
-            "error": f"Unexpected error: {str(e)}",
-            "statusCode": 500
-        }
+        raise Exception(f"Unexpected error while searching YouTube: {str(e)}")
