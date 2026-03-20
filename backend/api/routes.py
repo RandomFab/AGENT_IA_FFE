@@ -7,7 +7,7 @@ from backend.services.youtube_service import get_ytb_video
 
 from backend.schemas.lichess_schema import LichessOpeningWithGamesResponse, LichessInput
 from backend.schemas.stockfish_schema import StockfishEvaluationResponse, StockfishInput
-from backend.schemas.agent_schema import AgentResponse
+from backend.schemas.agent_schema import AgentInput, AgentOutput
 from backend.schemas.rag_schema import RAGSearchInput,RAGSearchResult
 from backend.schemas.youtube_schema import YoutubeVideoOutput, YoutubeVideoInput
 
@@ -78,8 +78,8 @@ def search_rag(rag_input: RAGSearchInput):
     results = retrieve_articles(request_text=rag_input.query, limit=rag_input.limit)
     return results
 
-@router.post("/agent", response_model=AgentResponse, tags=["Agent"])
-def call_chess_agent(agent_input: StockfishInput):
+@router.post("/agent", response_model=AgentOutput, tags=["Agent"])
+def call_chess_agent(agent_input: AgentInput):
     """Lance l'agent intelligent d'analyse d'échecs.
 
     Orchestre l'analyse complète via Lichess (base théorique) et Stockfish (calcul engine).
@@ -92,16 +92,10 @@ def call_chess_agent(agent_input: StockfishInput):
     Returns:
         AgentResponse: Réponse formatée avec évaluations Lichess et/ou Stockfish et réponse finale
     """
-    initial_state = AgentState(fen=agent_input.fen, depth=agent_input.depth)
+    initial_state = AgentState(fen=agent_input.fen)
 
     result = app.invoke(initial_state)
 
     # Formattage de la réponse
-    return AgentResponse(
-        fen=agent_input.fen,
-        depth=agent_input.depth,
-        final_answer=result.get("final_answer", "Erreur lors de l'analyse"),
-        lichess_evaluation=result.get("lichess_evaluation"),
-        stockfish_evaluation=result.get("stockfish_evaluation"),
-    )
+    return AgentOutput(final_answer=result.get("final_answer", "Erreur lors de l'analyse"),)
 
