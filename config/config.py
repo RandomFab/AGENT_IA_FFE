@@ -37,3 +37,16 @@ PALETTE = [
     "#18534F",
     "#696969",
 ]
+
+WIKIPEDIA_OPENING_CHESS_URLS = [
+    "https://en.wikipedia.org/wiki/Queen%27s_Indian_Defense",
+    "https://en.wikipedia.org/wiki/Sicilian_Defence",
+    #"https://en.wikipedia.org/wiki/Queen%27s_Gambit",
+    "https://en.wikipedia.org/wiki/English_Opening",
+    "https://en.wikipedia.org/wiki/French_Defence",
+    "https://en.wikipedia.org/wiki/Ruy_Lopez",
+    "https://en.wikipedia.org/wiki/Caro%E2%80%93Kann_Defence",
+    "https://en.wikipedia.org/wiki/Nimzo-Indian_Defence",
+    "https://en.wikipedia.org/wiki/King%27s_Indian_Defence",
+]
+INDEX_WIKIPEDIA_DIR = BASE_DIR / "data" / "vector_store" / "wikipedia_index.db"

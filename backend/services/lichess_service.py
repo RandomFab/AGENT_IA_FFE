@@ -27,13 +27,13 @@ def evaluate_opening(fen: str = os.getenv("FEN_EXAMPLE")) -> dict:
                 "moves": coups suggérés,
                 "cp": avantage en centipawns
               }
-            Ou dictionnaire d'erreur en cas d'échec.
+            Ou dictionnaire d'erreur en cas d'échec. 
     """
-    url = f"{os.getenv('LICHESS_API_URL')}/api/cloud-eval"
+    url = f"{os.getenv('LICHESS_API_URL')}/lichess"
     params = {"fen": fen}
     headers = {"Authorization": f"Bearer {os.getenv("LICHESS_API_KEY")}"}
     
-    logger.info(f"Évaluation Lichess demandée")
+    logger.info(f"Évaluation ouvertures théoriques Lichess demandée")
 
     try:
         response = requests.get(url, params=params, headers=headers, timeout=10)
