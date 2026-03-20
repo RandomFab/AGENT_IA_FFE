@@ -47,6 +47,19 @@ def get_stockfish_evaluation(stockfish_input: StockfishInput):
     return response
 
 
+@router.post("/retrieve", response_model=list[RAGSearchResult], tags=["RAG"])
+def search_rag(rag_input: RAGSearchInput):
+    """Recherche des articles similaires via RAG (Retrieval Augmented Generation).
+
+    Args:
+        rag_input: Texte à rechercher et nombre de résultats souhaités
+
+    Returns:
+        Liste de résultats avec similarité et métadonnées (title, text, source)
+    """
+    results = retrieve_articles(request_text=rag_input.query, limit=rag_input.limit)
+    return results
+
 @router.post("/agent", response_model=AgentResponse, tags=["Agent"])
 def call_chess_agent(agent_input: StockfishInput):
     """Lance l'agent intelligent d'analyse d'échecs.
@@ -74,16 +87,3 @@ def call_chess_agent(agent_input: StockfishInput):
         stockfish_evaluation=result.get("stockfish_evaluation"),
     )
 
-
-@router.post("/retrieve", response_model=list[RAGSearchResult], tags=["RAG"])
-def search_rag(rag_input: RAGSearchInput):
-    """Recherche des articles similaires via RAG (Retrieval Augmented Generation).
-
-    Args:
-        rag_input: Texte à rechercher et nombre de résultats souhaités
-
-    Returns:
-        Liste de résultats avec similarité et métadonnées (title, text, source)
-    """
-    results = retrieve_articles(request_text=rag_input.query, limit=rag_input.limit)
-    return results

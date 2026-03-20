@@ -3,7 +3,7 @@ from pydantic import BaseModel
 
 class RAGSearchInput(BaseModel):
     """Schéma d'entrée pour recherche RAG."""
-    query: str
+    query: str = "french defence"
     limit: int = 2
 
 
