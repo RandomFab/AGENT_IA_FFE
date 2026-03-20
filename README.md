@@ -1,72 +1,66 @@
-# ♟️ Agent IA FFE — Ouvertures aux Échecs
+# ♟️ Agent IA FFE — Assistant Ouvertures Jeunes
 
-[![Python](https://img.shields.io/badge/Python-3.13+-blue.svg?logo=python&logoColor=white)](https://www.python.org/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-latest-green.svg?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
-[![LangGraph](https://img.shields.io/badge/LangGraph-latest-orange.svg?logo=langchain&logoColor=white)](https://langchain-ai.github.io/langgraph/)
+
+[![Python](https://img.shields.io/badge/Python-3.13-blue.svg?logo=python&logoColor=white)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.135+-009688.svg?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![LangGraph](https://img.shields.io/badge/LangGraph-0.1.2-orange.svg?logo=langchain&logoColor=white)](https://langchain-ai.github.io/langgraph/)
+[![Milvus](https://img.shields.io/badge/Milvus-2.6.10-blue.svg?logo=zilliz&logoColor=white)](https://milvus.io/)
+[![Stockfish](https://img.shields.io/badge/Stockfish-16.1-222222.svg)](https://stockfishchess.org/)
 [![Angular](https://img.shields.io/badge/Angular-latest-red.svg?logo=angular&logoColor=white)](https://angular.io/)
 [![Docker](https://img.shields.io/badge/Docker-Compose-blue.svg?logo=docker&logoColor=white)](https://docs.docker.com/compose/)
 [![Status](https://img.shields.io/badge/Status-POC-yellow.svg)]()
 
-> **Proof of Concept** développé pour la **Fédération Française des Échecs (FFE)** — Un agent IA pour accompagner les jeunes espoirs dans l'apprentissage des ouvertures aux échecs.
+> **Projet FFE** : Un agent intelligent conçu pour accompagner les jeunes espoirs dans l'apprentissage et l'analyse de leurs ouvertures aux échecs.
 
 ---
 
 ## 🎯 Objectif du projet
 
-La FFE souhaite, en vue des championnats d'Europe jeunes, disposer d'un agent intelligent permettant aux jeunes espoirs de s'entraîner sur les ouvertures aux échecs.
-
-L'agent IA guide l'utilisateur en :
-- ✅ Proposant les **meilleurs coups** issus de la théorie des ouvertures
-- ✅ Fournissant le **contexte des ouvertures** enrichi par des parties historiques (Lichess)
-- ✅ Affichant des **vidéos explicatives YouTube** pertinentes à la position en cours
-- ✅ Évaluant la position via **Stockfish** lorsque la partie s'écarte de la théorie
+L'objectif est de fournir un coach virtuel capable d'analyser une position (FEN) en combinant théorie classique et puissance de calcul brute. L'agent guide l'utilisateur en :
+- 📖 Identifiant l'ouverture via la **Base Lichess** (Théorie).
+- 🧠 Enrichissant la réponse avec du contexte historique via **RAG (Milvus + Wikipedia)**.
+- ⚙️ Calculant les meilleurs coups via **Stockfish** si la position sort de la théorie.
+- ⏳ Affichant des **vidéos explicatives YouTube** pertinentes à la position en cours
 
 ---
 
-## ✨ Fonctionnalités
+## 📐 Architecture Technique
 
-- ♟️ Interface web avec **échiquier interactif** (Angular + ngx-chessboard)
-- 🤖 Agent IA piloté par **LangGraph**, connecté à plusieurs outils spécialisés
-- 🔍 Identification de la position par **notation FEN**
-- 📚 Consultation de la **bibliothèque d'ouvertures Lichess**
-- ♜ Analyse de position par le moteur **Stockfish**
-- 🗄️ Recherche vectorielle sur les données d'ouvertures via **Milvus**
-- 🎥 Suggestions de vidéos pertinentes via **YouTube API**
-- 🐳 Déploiement local via **Docker Compose**
-
----
-
-## 📐 Architecture
+Le coeur de l'application repose sur un orchestrateur **LangGraph** qui gère le flux de décision.
 
 ```mermaid
-graph TB
-    subgraph Frontend["🖥️ Frontend"]
-        UI[Angular + ngx-chessboard]
+graph TD
+    User([👤 Jeune Joueur]) -->|FEN| API[🚀 FastAPI]
+    
+    subgraph "🧠 Logic Agent (LangGraph)"
+        API --> LG_Start{{"🚦 START"}}
+        LG_Start --> Node_Lic["♟️ Node Lichess"]
+        
+        Node_Lic --> Decision{"❓ Théorie connue ?"}
+        
+        Decision -- "OUI" --> Node_Wiki["📚 Node RAG/Wiki"]
+        Decision -- "NON" --> Node_SF["⚙️ Node Stockfish"]
+        
+        Node_Wiki --> Node_Format["📝 Formatter"]
+        Node_SF --> Node_Format
+        
+        Node_Format --> LG_End{{"🏁 END"}}
     end
 
-    subgraph Backend["⚙️ Backend"]
-        API[FastAPI]
-        AGENT[Agent LangGraph]
+    subgraph "🔧 Services & Data"
+        Node_Lic -.-> Ser_Lic[Lichess API]
+        Node_Wiki -.-> Ser_Milvus[(Milvus DB)]
+        Node_SF -.-> Ser_SF[Stockfish Engine]
     end
 
-    subgraph Outils["🔧 Outils de l'Agent"]
-        SF[Stockfish\nMoteur d'analyse]
-        LI[Lichess API\nBibliothèque d'ouvertures]
-        YT[YouTube API\nVidéos explicatives]
-        MV[Milvus\nRecherche vectorielle]
-        MG[MongoDB\nStockage des données]
-    end
-
-    UI -->|FEN + coups joués| API
-    API --> AGENT
-    AGENT --> SF
-    AGENT --> LI
-    AGENT --> YT
-    AGENT --> MV
-    AGENT --> MG
-    AGENT -->|Réponse enrichie| API
-    API -->|Coup conseillé + contexte + vidéo| UI
+    LG_End -->|Réponse enrichie| API
+    API -->|Conseils + Analyse| User
 ```
+
+**Sources de données :**
+- **Lichess API** : Accès aux bases de données de millions de parties de maîtres.
+- **Wikipedia** : Corpus textuel sur les ouvertures (ingéré dans Milvus).
+- **Stockfish** : Moteur d'évaluation local pour l'analyse tactique.
 
 ---
 
@@ -80,7 +74,6 @@ AGENT_IA_FFE/
 │   ├── 🧠 graph/            # Workflow LangGraph de l'agent
 │   ├── 📜 schemas/          # Modèles Pydantic / Validation
 │   ├── 🛠️ services/         # Logique métier et outils (API Lichess, YouTube)
-│   ├── 📁 vector_db/        # Intégration Milvus / Recherche vectorielle
 │   └── 🐳 Dockerfile        # Image Docker spécialisée Backend (Python 3.13)
 │
 ├── 📂 frontend/             # Interface interactive Angular
@@ -105,27 +98,54 @@ AGENT_IA_FFE/
 
 Une fois le serveur lancé (`uv run uvicorn backend.api.main:api --reload`), la documentation Swagger est accessible sur **`http://127.0.0.1:8000/docs`**.
 
-### 1. Obtenir les meilleurs coups depuis la théorie (Lichess)
+### 🤖 1. Lancer l'Agent Intelligent (LangGraph)
+C'est le point d'entrée principal qui orchestre l'analyse complète (Lichess + Stockfish + RAG).
 ```bash
 curl -X 'POST' \
-  'http://127.0.0.1:8000/api/v1/moves' \
+  'http://127.0.0.1:8000/api/v1/agent' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "fen": "rnbqkbnr/pppp1ppp/4p3/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2",
+  "depth": 15
+}'
+```
+
+### 📖 2. Obtenir les meilleurs coups théoriques (Lichess)
+Interroge uniquement la base de données de parties de maîtres.
+```bash
+curl -X 'POST' \
+  'http://127.0.0.1:8000/api/v1/opening' \
   -H 'Content-Type: application/json' \
   -d '{
   "fen": "r1bqkbnr/pppp1ppp/2n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 3 3"
 }'
 ```
 
-### 2. Évaluer une position hors théorie (Stockfish)
+### ⚙️ 3. Évaluer une position pure (Stockfish)
+Évaluation par moteur d'échecs (profondeur paramétrable).
 ```bash
 curl -X 'POST' \
   'http://127.0.0.1:8000/api/v1/evaluate' \
   -H 'Content-Type: application/json' \
   -d '{
   "fen": "r1bqkbnr/pppp1ppp/2n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 3 3",
-  "depth": 5
+  "depth": 12
 }'
 ```
-> 💡 *Note : Les positions (FEN) entrantes et les coups renvoyés par les API sont validés en amont/aval via la bibliothèque `python-chess`.*
+
+### 🔍 4. Recherche sémantique RAG (Milvus)
+Recherche des articles Wikipedia traitant de l'ouverture spécifiée.
+```bash
+curl -X 'POST' \
+  'http://127.0.0.1:8000/api/v1/retrieve' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "query": "french defence",
+  "limit": 2
+}'
+```
+
+> 💡 *Note : Les positions (FEN) entrantes et les coups renvoyés par les API sont validés via la bibliothèque `python-chess`.*
 
 ---
 
