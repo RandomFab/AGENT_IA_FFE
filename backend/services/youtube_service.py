@@ -1,14 +1,14 @@
 import os
 import requests
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 from dotenv import load_dotenv
-from backend.schemas.youtube_schema import YoutubeVideosOutput, YoutubeVideo
+from backend.schemas.youtube_schema import YoutubeVideoOutput
 
 # Charger les variables d'environnement du fichier .env
 load_dotenv()
 
 
-def get_chess_opening_ytb_video(opening: str, max_results: int = 25) -> YoutubeVideosOutput | Dict[str, Any]:
+def get_ytb_video(opening: str, max_results: int = 25) -> List[YoutubeVideoOutput] | Dict[str, Any]:
     """
     Recherche des vidéos YouTube sur une ouverture d'échecs.
     
@@ -59,7 +59,7 @@ def get_chess_opening_ytb_video(opening: str, max_results: int = 25) -> YoutubeV
             snippet = item.get("snippet", {})
             video_id = item.get("id", {}).get("videoId")
             
-            video = YoutubeVideo(
+            video = YoutubeVideoOutput(
                 title=snippet.get("title", ""),
                 description=snippet.get("description", ""),
                 thumbnail_url=snippet.get("thumbnails", {}).get("default", {}).get("url", ""),
@@ -68,7 +68,7 @@ def get_chess_opening_ytb_video(opening: str, max_results: int = 25) -> YoutubeV
             )
             videos.append(video)
         
-        return YoutubeVideosOutput(videos=videos)
+        return videos
     
     # 4. Gestion spécifique des erreurs de connexion
     except requests.exceptions.Timeout:

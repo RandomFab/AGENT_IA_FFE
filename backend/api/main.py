@@ -37,16 +37,16 @@ tags_metadata = [
         "description": "Vérification de l'état du service",
     },
     {
-        "name": "Lichess",
-        "description": "Accès à la base théorique Lichess",
+        "name": "move_evaluation",
+        "description": "Accès à la base théorique Lichess et a l'evaluation stockfish",
     },
     {
-        "name": "Stockfish",
-        "description": "Analyse d'échecs avec Stockfish",
+        "name": "retrieve",
+        "description": "Videos youtube et articles wikipedia sur les ouvertures",
     },
-    {
+        {
         "name": "Agent",
-        "description": "Agent intelligent d'analyse d'échecs (Lichess + Stockfish)",
+        "description": "Agent intelligent d'analyse d'échecs",
     },
 ]
 
