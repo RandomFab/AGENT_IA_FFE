@@ -1,6 +1,6 @@
 from langgraph.graph import StateGraph, START, END
 from backend.graph.state import AgentState
-from backend.graph.nodes import node_stockfish, node_lichess, node_format_response,node_wikipedia_search
+from backend.graph.nodes import node_stockfish, node_lichess, node_format_response,node_wikipedia_search, node_youtube_search
 
 
 workflow = StateGraph(AgentState)
@@ -8,6 +8,7 @@ workflow = StateGraph(AgentState)
 # --- Ajouter les nœuds ---
 workflow.add_node("lichess", node_lichess)
 workflow.add_node("wikipedia", node_wikipedia_search)
+workflow.add_node("youtube", node_youtube_search)
 workflow.add_node("stockfish", node_stockfish)
 workflow.add_node("formatter", node_format_response)
 
@@ -16,7 +17,7 @@ workflow.set_entry_point("lichess")
 
 # --- Arête ---
 
-## Arêtes Lichess 'conditionnelles' → (Stockfish OU wikipedia)
+## Arêtes Lichess 'conditionnelles' → (Stockfish OU wikipedia + youtube)
 
 
 def should_use_stockfish(state: AgentState) -> str:
@@ -24,16 +25,20 @@ def should_use_stockfish(state: AgentState) -> str:
     if state.get("lichess_evaluation") is None:
         return "stockfish"  # Pas de théorie trouvée, appelle Stockfish
     else:
-        return "wikipedia"
+        return ["wikipedia", "youtube"]
 
 
 workflow.add_conditional_edges(
     "lichess",
     should_use_stockfish,
-    {"stockfish": "stockfish", "wikipedia": "wikipedia"},
+    {"stockfish": "stockfish", "wikipedia": "wikipedia", "youtube": "youtube"},
 )
 
+## Arête wikipedia → Fromatage
 workflow.add_edge("wikipedia", "formatter")
+
+## Arête youtube → Fromatage
+workflow.add_edge("youtube", "formatter")
 
 ## Arête Stockfish → Fromatage
 workflow.add_edge("stockfish", "formatter")
