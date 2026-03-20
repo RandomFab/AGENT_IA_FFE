@@ -1,4 +1,3 @@
-from backend.services.rag_service import retrieve_articles
 from pydantic import BaseModel
 
 class RAGSearchInput(BaseModel):
