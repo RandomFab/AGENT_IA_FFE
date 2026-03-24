@@ -10,6 +10,10 @@ initial_state: AgentState = {
     "final_answer": ""
 }
 
+# Afficher le schéma du graphe
+print("=== SCHÉMA DU GRAPHE ===")
+print(app.get_graph().draw_ascii())
+
 # Lancer le workflow
 result = app.invoke(initial_state)
 

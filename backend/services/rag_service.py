@@ -6,6 +6,8 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from sentence_transformers import SentenceTransformer
 from pymilvus import MilvusClient
 
+from backend.schemas.rag_schema import RAGSearchResult
+
 from config.logger import logger
 from config.config import INDEX_WIKIPEDIA_DIR
 
@@ -100,7 +102,7 @@ def ingest_chess_openings_to_milvus(urls: list[str]) -> dict:
 
 ## --- retrieval ---
 
-def retrieve_articles(request_text: str, collection_name: str = "chess_openings", limit: int = 2) -> list[dict]:
+def retrieve_articles(request_text: str, collection_name: str = "chess_openings", limit: int = 2) -> list[RAGSearchResult]:
     """Recherche les articles similaires dans Milvus.
     
     Args:
@@ -109,7 +111,7 @@ def retrieve_articles(request_text: str, collection_name: str = "chess_openings"
         limit: Nombre de résultats à retourner (défaut: 2)
         
     Returns:
-        Liste de dictionnaires avec les résultats (title, text, url, similarity)
+        Liste de RAGSearchResult avec les résultats (title, text, source, distance)
     """
     logger.info(f"🔍 Recherche d'articles pour : {request_text[:50]}...")
     
@@ -137,13 +139,13 @@ def retrieve_articles(request_text: str, collection_name: str = "chess_openings"
                 for hit in res[0]:
                     # Les champs sont parfois dans "entity" selon la version de Pymilvus
                     entity = hit.get("entity", hit)
-                    formatted_results.append({
+                    formatted_results.append(RAGSearchResult({
                         "id": hit.get("id"),
                         "distance": hit.get("distance"),
                         "title": entity.get("title", "N/A"),
                         "text": entity.get("text", ""),
                         "source": entity.get("source", "")
-                    })
+                    }))
                     
             logger.info(f"✅ {len(formatted_results)} résultats trouvés")
             return formatted_results

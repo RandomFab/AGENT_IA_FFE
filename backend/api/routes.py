@@ -3,10 +3,14 @@ from fastapi import APIRouter
 from backend.services.lichess_service import evaluate_opening
 from backend.services.stockfish_service import evaluate_position
 from backend.services.rag_service import retrieve_articles
+from backend.services.youtube_service import get_ytb_video
+
 from backend.schemas.lichess_schema import LichessOpeningWithGamesResponse, LichessInput
 from backend.schemas.stockfish_schema import StockfishEvaluationResponse, StockfishInput
-from backend.schemas.agent_schema import AgentResponse
+from backend.schemas.agent_schema import AgentInput, AgentOutput
 from backend.schemas.rag_schema import RAGSearchInput,RAGSearchResult
+from backend.schemas.youtube_schema import YoutubeVideoOutput, YoutubeVideoInput
+
 from backend.graph.state import AgentState
 from backend.graph.agent import app
 
@@ -15,7 +19,7 @@ router = APIRouter(prefix="/api/v1")
 
 
 @router.post(
-    "/opening", response_model=LichessOpeningWithGamesResponse, tags=["Lichess"]
+    "/opening", response_model=LichessOpeningWithGamesResponse, tags=["move_evaluation"]
 )
 def get_lichess_moves(lichess_input: LichessInput):
     """Récupère les meilleurs coups d'une position via Lichess.
@@ -31,7 +35,7 @@ def get_lichess_moves(lichess_input: LichessInput):
 
 
 @router.post(
-    "/evaluate", response_model=StockfishEvaluationResponse, tags=["Stockfish"]
+    "/evaluate", response_model=StockfishEvaluationResponse, tags=["move_evaluation"]
 )
 def get_stockfish_evaluation(stockfish_input: StockfishInput):
     """Évalue une position d'échecs via Stockfish.
@@ -47,7 +51,21 @@ def get_stockfish_evaluation(stockfish_input: StockfishInput):
     return response
 
 
-@router.post("/retrieve", response_model=list[RAGSearchResult], tags=["RAG"])
+@router.post("/retrieve_video", response_model=list[YoutubeVideoOutput], tags=["retrieve"])
+def search_video(youtube_video_input: YoutubeVideoInput):
+    """Recherche des videos relatif à l'ouverture via YouTube.
+
+    Args:
+        youtube_video_input: Texte à rechercher et nombre de résultats souhaités
+
+    Returns:
+        Liste de résultats avec similarité et métadonnées (title, miniature, description, date de publication, lien video)
+    """
+    results = get_ytb_video(opening=youtube_video_input.opening_name, max_results=youtube_video_input.max_results)
+    return results
+
+
+@router.post("/retrieve_articles", response_model=list[RAGSearchResult], tags=["retrieve"])
 def search_rag(rag_input: RAGSearchInput):
     """Recherche des articles similaires via RAG (Retrieval Augmented Generation).
 
@@ -60,8 +78,8 @@ def search_rag(rag_input: RAGSearchInput):
     results = retrieve_articles(request_text=rag_input.query, limit=rag_input.limit)
     return results
 
-@router.post("/agent", response_model=AgentResponse, tags=["Agent"])
-def call_chess_agent(agent_input: StockfishInput):
+@router.post("/agent", response_model=AgentOutput, tags=["Agent"])
+def call_chess_agent(agent_input: AgentInput):
     """Lance l'agent intelligent d'analyse d'échecs.
 
     Orchestre l'analyse complète via Lichess (base théorique) et Stockfish (calcul engine).
@@ -74,16 +92,10 @@ def call_chess_agent(agent_input: StockfishInput):
     Returns:
         AgentResponse: Réponse formatée avec évaluations Lichess et/ou Stockfish et réponse finale
     """
-    initial_state = AgentState(fen=agent_input.fen, depth=agent_input.depth)
+    initial_state = AgentState(fen=agent_input.fen)
 
     result = app.invoke(initial_state)
 
     # Formattage de la réponse
-    return AgentResponse(
-        fen=agent_input.fen,
-        depth=agent_input.depth,
-        final_answer=result.get("final_answer", "Erreur lors de l'analyse"),
-        lichess_evaluation=result.get("lichess_evaluation"),
-        stockfish_evaluation=result.get("stockfish_evaluation"),
-    )
+    return AgentOutput(final_answer=result.get("final_answer", "Erreur lors de l'analyse"),)
 

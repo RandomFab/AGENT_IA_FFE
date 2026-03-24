@@ -2,9 +2,10 @@
 from backend.graph.state import AgentState
 from backend.services.lichess_service import evaluate_opening
 from backend.services.stockfish_service import evaluate_position
+from backend.services.rag_service import retrieve_articles
+from backend.services.youtube_service import get_ytb_video
 from backend.schemas.lichess_schema import LichessOpeningWithGamesResponse
 from backend.schemas.stockfish_schema import StockfishEvaluationResponse
-from backend.services.rag_service import retrieve_articles
 
 from config.logger import logger
 
@@ -95,44 +96,83 @@ def node_stockfish(state: AgentState):
         logger.error(f"[NODE STOCKFISH] ✗ Erreur inattendue: {str(e)}", exc_info=True)
         return {"stockfish_evaluation": None}
 
-# --- Milvus Node ---
+# --- Articles Node ---
 
 def node_wikipedia_search(state: AgentState):
     """
-    Nœud de recherche RAG pour enrichir l'analyse avec des articles Milvus.
+    Nœud de recherche RAG pour enrichir l'analyse avec des articles Wikipedia.
     Utilise l'évaluation Lichess ou Stockfish comme requête de recherche.
     """
-    logger.info("[NODE MILVUS] Début de recherche RAG...")
+    logger.info("[NODE WIKIPEDIA] Début de recherche RAG...")
     
     try:
         # Déterminer le texte de recherche (priorité: Lichess, sinon Stockfish)
-        search_query = state.get("lichess_evaluation") or state.get("stockfish_evaluation")
+        search_query = state.get("lichess_evaluation")
         
         if not search_query:
-            logger.warning("[NODE MILVUS] ⚠️ Aucune évaluation disponible pour la recherche")
-            return {"milvus_context": None}
+            logger.warning("[NODE WIKIPEDIA] ⚠️ Aucune évaluation disponible pour la recherche")
+            return {"articles_context": None}
         
-        logger.debug(f"[NODE MILVUS] Requête de recherche: {str(search_query)[:50]}...")
+        logger.debug(f"[NODE WIKIPEDIA] Requête de recherche: {str(search_query)[:50]}...")
         
         # Rechercher les articles similaires
         results = retrieve_articles(search_query, limit=5)
         
         if results:
-            logger.info(f"[NODE MILVUS] ✓ {len(results)} articles trouvés")
-            # Formater le contexte pour le formatter final
-            context = "\n".join([
-                f"- {r.get('title', 'N/A')}: {r.get('text', '')[:100]}..."
-                for r in results
-            ])
-            return {"milvus_context": context}
+            # Convertir les objets Pydantic en dicts pour le state
+            articles_as_dicts = [article.model_dump() for article in results]
+            logger.info(f"[NODE WIKIPEDIA] ✓ {len(articles_as_dicts)} articles trouvés")
+            return {"articles_context": articles_as_dicts}
         else:
-            logger.warning("[NODE MILVUS] ⚠️ Aucun article trouvé")
-            return {"milvus_context": None}
+            logger.warning("[NODE WIKIPEDIA] ⚠️ Aucun article trouvé")
+            return {"articles_context": None}
     
     except Exception as e:
-        logger.error(f"[NODE MILVUS] ✗ Erreur recherche RAG: {str(e)}")
-        return {"milvus_context": None}
+        logger.error(f"[NODE WIKIPEDIA] ✗ Erreur recherche RAG: {str(e)}")
+        return {"articles_context": None}
 
+
+# --- Videos Node ---
+
+def node_youtube_search(state: AgentState):
+    """
+    Nœud de recherche youtube pour enrichir l'analyse avec des videos
+    Utilise l'évaluation d'ouverture Lichess comme requête de recherche.
+    """
+    logger.info("[NODE YOUTUBE] Début de recherche youtube...")
+    
+    try:
+        # Déterminer le texte de recherche (priorité: Lichess, sinon Stockfish)
+        search_query = state.get("lichess_evaluation")
+        
+        if not search_query:
+            logger.warning("[NODE YOUTUBE] ⚠️ Aucune évaluation disponible pour la recherche")
+            return {"videos_context": None}
+        
+        logger.debug(f"[NODE YOUTUBE] Requête de recherche: {str(search_query)[:50]}...")
+        
+        # Rechercher les vidéos
+        results = get_ytb_video(search_query, max_results=3)
+        
+        if results:
+            # Convertir les objets Pydantic en dicts pour le state
+            videos_as_dicts = [video.model_dump() for video in results]
+            logger.info(f"[NODE YOUTUBE] ✓ {len(videos_as_dicts)} vidéos trouvées")
+            return {"videos_context": videos_as_dicts}
+        else:
+            logger.warning("[NODE YOUTUBE] ⚠️ Aucune vidéo trouvée")
+            return {"videos_context": None}
+    
+    except ValueError as e:
+        logger.error(f"[NODE YOUTUBE] ✗ Erreur configuration: {str(e)}")
+        return {"videos_context": None}
+    except (TimeoutError, ConnectionError) as e:
+        logger.error(f"[NODE YOUTUBE] ✗ Erreur connexion YouTube: {str(e)}")
+        return {"videos_context": None}
+    except Exception as e:
+        logger.error(f"[NODE YOUTUBE] ✗ Erreur recherche YouTube: {str(e)}")
+        return {"videos_context": None}
+    
 
 # --- Fromatter Node ---
 
@@ -142,7 +182,7 @@ def node_format_response(state: AgentState):
 
     lichess_evaluation = state.get("lichess_evaluation")
     stockfish_evaluation = state.get("stockfish_evaluation")
-    milvus_context = state.get("milvus_context")
+    milvus_context = state.get("articles_context")
 
     if lichess_evaluation:
         final_answer = f"Opening found in theory: {lichess_evaluation}"
