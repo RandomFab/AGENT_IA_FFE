@@ -117,7 +117,7 @@ def retrieve_articles(request_text: str, collection_name: str = "chess_openings"
     
     try:
         # Embedding du texte de requête
-        embed_model = _get_embedding_model()
+        embed_model = get_embedding_model()
         vector = embed_model.encode(request_text, show_progress_bar=False)
         
         # Recherche dans Milvus
@@ -241,7 +241,7 @@ def _chunk_wikipedia_articles(documents: list[Document]) -> list[Document]:
 
 _embedding_model = None  # Cache global pour éviter rechargement du modèle
 
-def _get_embedding_model(model_name: str = 'sentence-transformers/all-MiniLM-L6-v2') -> SentenceTransformer:
+def get_embedding_model(model_name: str = 'sentence-transformers/all-MiniLM-L6-v2') -> SentenceTransformer:
     """Retourne le modèle d'embedding en cache (singleton).
     
     Args:
@@ -289,7 +289,7 @@ def _embed_chunks(chunks: list[Document]) -> list[dict]:
         texts = [chunk.page_content for chunk in chunks]
         
         # Charger le modèle
-        model = _get_embedding_model()
+        model = get_embedding_model()
         
         # Générer les embeddings
         vectors = model.encode(texts, show_progress_bar=False)

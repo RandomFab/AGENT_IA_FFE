@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from backend.api.routes import router
 
-from backend.services.rag_service import ingest_chess_openings_to_milvus, is_milvus_collection_exists
+from backend.services.rag_service import ingest_chess_openings_to_milvus, is_milvus_collection_exists, get_embedding_model
 
 from config.config import WIKIPEDIA_OPENING_CHESS_URLS
 from config.logger import logger
@@ -16,6 +16,14 @@ async def lifespan(app: FastAPI):
    
     logger.info("🚀 Démarrage de l'application...")
     
+    # Charger le modèle d'embedding en cache
+    logger.info("🤖 Préchargement du modèle d'embedding...")
+    try:
+        get_embedding_model()
+        logger.info("✅ Modèle d'embedding chargé et mis en cache")
+    except Exception as e:
+        logger.error(f"⚠️ Erreur lors du chargement du modèle d'embedding: {str(e)}")
+    
     if not is_milvus_collection_exists():
         logger.info("📊 Chargement des données Milvus...")
         result = ingest_chess_openings_to_milvus(WIKIPEDIA_OPENING_CHESS_URLS)
@@ -26,7 +34,7 @@ async def lifespan(app: FastAPI):
     else:
         logger.info("✅ Données Milvus déjà chargées, skip initialisation")
     
-    yield  
+    yield
 
 
 # --- Configuration FastAPI ---
