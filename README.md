@@ -6,6 +6,7 @@
 [![LangGraph](https://img.shields.io/badge/LangGraph-0.1.2-orange.svg?logo=langchain&logoColor=white)](https://langchain-ai.github.io/langgraph/)
 [![Milvus](https://img.shields.io/badge/Milvus-2.6.10-blue.svg?logo=zilliz&logoColor=white)](https://milvus.io/)
 [![Stockfish](https://img.shields.io/badge/Stockfish-16.1-222222.svg)](https://stockfishchess.org/)
+[![YouTube API v3](https://img.shields.io/badge/YouTube_Data_v3-FF0000?logo=youtube&logoColor=white)](https://developers.google.com/youtube/v3)
 [![Angular](https://img.shields.io/badge/Angular-latest-red.svg?logo=angular&logoColor=white)](https://angular.io/)
 [![Docker](https://img.shields.io/badge/Docker-Compose-blue.svg?logo=docker&logoColor=white)](https://docs.docker.com/compose/)
 [![Status](https://img.shields.io/badge/Status-POC-yellow.svg)]()
@@ -20,7 +21,7 @@ L'objectif est de fournir un coach virtuel capable d'analyser une position (FEN)
 - 📖 Identifiant l'ouverture via la **Base Lichess** (Théorie).
 - 🧠 Enrichissant la réponse avec du contexte historique via **RAG (Milvus + Wikipedia)**.
 - ⚙️ Calculant les meilleurs coups via **Stockfish** si la position sort de la théorie.
-- ⏳ Affichant des **vidéos explicatives YouTube** pertinentes à la position en cours
+- ⏯️ Affichant des **vidéos explicatives YouTube** pertinentes à la position en cours
 
 ---
 
@@ -29,37 +30,51 @@ L'objectif est de fournir un coach virtuel capable d'analyser une position (FEN)
 Le coeur de l'application repose sur un orchestrateur **LangGraph** qui gère le flux de décision.
 
 ```mermaid
-graph TD
-    User([👤 Jeune Joueur]) -->|FEN| API[🚀 FastAPI]
+graph LR
+    User([👤 Jeune Joueur]) <-->|FEN\n / Conseils | API[🚀 FastAPI]
     
     subgraph "🧠 Logic Agent (LangGraph)"
+        direction TB
         API --> LG_Start{{"🚦 START"}}
         LG_Start --> Node_Lic["♟️ Node Lichess"]
         
         Node_Lic --> Decision{"❓ Théorie connue ?"}
         
         Decision -- "OUI" --> Node_Wiki["📚 Node RAG/Wiki"]
+        Decision -- "OUI" --> Node_Ytb["▶️ Node YouTube"]
         Decision -- "NON" --> Node_SF["⚙️ Node Stockfish"]
         
         Node_Wiki --> Node_Format["📝 Formatter"]
+        Node_Ytb --> Node_Format
         Node_SF --> Node_Format
         
         Node_Format --> LG_End{{"🏁 END"}}
     end
 
     subgraph "🔧 Services & Data"
-        Node_Lic -.-> Ser_Lic[Lichess API]
-        Node_Wiki -.-> Ser_Milvus[(Milvus DB)]
-        Node_SF -.-> Ser_SF[Stockfish Engine]
+        direction TB
+        Ser_Lic[Lichess API]
+        Ser_Milvus[(Milvus DB)]
+        Ser_Ytb[YouTube Data API]
+        Ser_SF[Stockfish Engine]
+        
+        Ser_Lic ~~~ Ser_Milvus
+        Ser_Milvus ~~~ Ser_Ytb
+        Ser_Ytb ~~~ Ser_SF
     end
+    
+    Node_Lic -.-> Ser_Lic
+    Node_Wiki -.-> Ser_Milvus
+    Node_Ytb -.-> Ser_Ytb
+    Node_SF -.-> Ser_SF
 
     LG_End -->|Réponse enrichie| API
-    API -->|Conseils + Analyse| User
 ```
 
 **Sources de données :**
 - **Lichess API** : Accès aux bases de données de millions de parties de maîtres.
 - **Wikipedia** : Corpus textuel sur les ouvertures (ingéré dans Milvus).
+- **YouTube** : Récupération de vidéos via l'API officielle pour approfondir l'apprentissage.
 - **Stockfish** : Moteur d'évaluation local pour l'analyse tactique.
 
 ---
@@ -70,10 +85,10 @@ graph TD
 AGENT_IA_FFE/
 │
 ├── 📂 backend/              # Application FastAPI & Logique Agent
-│   ├── 🌐 api/              # Endpoints FastAPI (main.py)
+│   ├── 🌐 api/              # Endpoints FastAPI (main.py, routes.py)
 │   ├── 🧠 graph/            # Workflow LangGraph de l'agent
-│   ├── 📜 schemas/          # Modèles Pydantic / Validation
-│   ├── 🛠️ services/         # Logique métier et outils (API Lichess, YouTube)
+│   ├── 📜 schemas/          # Modèles Pydantic / Validation (Lichess, RAG, YouTube...)
+│   ├── 🛠️ services/         # Logique métier et outils (API Lichess, Stockfish, YouTube)
 │   └── 🐳 Dockerfile        # Image Docker spécialisée Backend (Python 3.13)
 │
 ├── 📂 frontend/             # Interface interactive Angular
@@ -137,11 +152,23 @@ curl -X 'POST' \
 Recherche des articles Wikipedia traitant de l'ouverture spécifiée.
 ```bash
 curl -X 'POST' \
-  'http://127.0.0.1:8000/api/v1/retrieve' \
+  'http://127.0.0.1:8000/api/v1/retrieve_articles' \
   -H 'Content-Type: application/json' \
   -d '{
   "query": "french defence",
   "limit": 2
+}'
+```
+
+### 🎥 5. Récupération de vidéos YouTube
+Recherche de vidéos pédagogiques relatives à l'ouverture afin d'approfondir l'apprentissage.
+```bash
+curl -X 'POST' \
+  'http://127.0.0.1:8000/api/v1/retrieve_video' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "opening_name": "french defence",
+  "max_results": 2
 }'
 ```
 
