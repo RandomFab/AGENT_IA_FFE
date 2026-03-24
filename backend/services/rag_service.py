@@ -139,13 +139,13 @@ def retrieve_articles(request_text: str, collection_name: str = "chess_openings"
                 for hit in res[0]:
                     # Les champs sont parfois dans "entity" selon la version de Pymilvus
                     entity = hit.get("entity", hit)
-                    formatted_results.append(RAGSearchResult({
-                        "id": hit.get("id"),
-                        "distance": hit.get("distance"),
-                        "title": entity.get("title", "N/A"),
-                        "text": entity.get("text", ""),
-                        "source": entity.get("source", "")
-                    }))
+                    formatted_results.append(RAGSearchResult(
+                        id=hit.get("id"),
+                        distance=hit.get("distance"),
+                        title=entity.get("title", "N/A"),
+                        text=entity.get("text", ""),
+                        source=entity.get("source", "")
+                    ))
                     
             logger.info(f"✅ {len(formatted_results)} résultats trouvés")
             return formatted_results
