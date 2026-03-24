@@ -4,6 +4,7 @@ from backend.services.lichess_service import evaluate_opening
 from backend.services.stockfish_service import evaluate_position
 from backend.services.rag_service import retrieve_articles
 from backend.services.youtube_service import get_ytb_video
+from backend.services.format_service import format_llm_response
 from backend.schemas.lichess_schema import LichessOpeningWithGamesResponse
 from backend.schemas.stockfish_schema import StockfishEvaluationResponse
 
@@ -177,26 +178,14 @@ def node_youtube_search(state: AgentState):
 # --- Fromatter Node ---
 
 def node_format_response(state: AgentState):
-    """Formate la réponse finale pour l'utilisateur."""
-    logger.info("[NODE FORMATTER] Début de formatage de la réponse")
-
-    lichess_evaluation = state.get("lichess_evaluation")
-    stockfish_evaluation = state.get("stockfish_evaluation")
-    milvus_context = state.get("articles_context")
-
-    if lichess_evaluation:
-        final_answer = f"Opening found in theory: {lichess_evaluation}"
-    elif stockfish_evaluation:
-        # Extract move and evaluation from dict
-        move = stockfish_evaluation.get("move", "Unknown")
-        cp = stockfish_evaluation.get("cp", 0)
-        final_answer = f"Stockfish analysis: {move} (evaluation: {cp} cp)"
-    else:
-        final_answer = "No evaluation found"
-
-    # Add Wikipedia context if available
-    if milvus_context:
-        final_answer += f"\n\nRelated openings:\n{milvus_context}"
-
-    logger.info(f"[NODE FORMATTER] ✓ Response formatted")
-    return {"final_answer": final_answer}
+    """Formate la réponse final avec un LLM."""
+    logger.info("[NODE FORMATTER] Début de formatage avec LLM")
+    
+    try:
+        final_answer = format_llm_response(state)
+        logger.info(f"[NODE FORMATTER] ✓ Réponse formatée")
+        return {"final_answer": final_answer}
+    except Exception as e:
+        logger.error(f"[NODE FORMATTER] ✗ Erreur: {str(e)}")
+        # Fallback ultra-simple
+        return {"final_answer": "Erreur lors de la génération de la réponse"}
