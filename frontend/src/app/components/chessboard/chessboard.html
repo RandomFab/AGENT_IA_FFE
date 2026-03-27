@@ -1,1 +1,25 @@
-<p>chessboard works!</p>
+<div class="chessboard">
+  <div class="rank" *ngFor="let row of board">
+    <div
+      *ngFor="let cell of row"
+      class="square"
+      [class.light]="cell.isLight"
+      [class.dark]="!cell.isLight"
+      [class.selected]="cell.isSelected"
+      [class.legal-move]="cell.isLegalMove"
+      draggable="true"
+      (dragstart)="onDragStart($event, cell.square)"
+      (dragover)="onDragOver($event)"
+      (drop)="onDrop($event, cell.square)"
+    >
+      <span class="piece">{{ getPieceSymbol(cell.piece) }}</span>
+    </div>
+  </div>
+</div>
+
+<div class="fen-display">
+  <label>FEN :</label>
+  <span>{{ getFen() }}</span>
+</div>
+
+<button (click)="reset()">Reset</button>
