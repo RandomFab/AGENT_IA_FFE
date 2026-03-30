@@ -6,7 +6,7 @@ export interface AgentInput {
 }
 
 export interface AgentOutput {
-    answer: string;
+    final_answer: string;
 }
 
 export interface RequestState<T> {
