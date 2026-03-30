@@ -41,7 +41,7 @@ export class AgentService {
                 });
             }),
 
-            switchMap(fen => this.api.post<AgentOutput, AgentInput>('agent', { fen }).pipe(
+            switchMap(fen => this.api.post<AgentOutput, AgentInput>('agent', { fen, depth: 5, maxArticles: 3, max_videos: 2 }).pipe(
                 map(response=> {
                     console.log('Received response from API:', response);
                     return {data:response, isLoading: false, error: null};
