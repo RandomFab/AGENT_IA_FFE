@@ -1,8 +1,8 @@
 export interface AgentInput {
     fen: string;
     depth:number;
-    maxArticles : number;
-    max_videos : number;
+    max_articles : number;
+    max_video : number;
 }
 
 export interface AgentOutput {
