@@ -1,19 +1,66 @@
-<div class="chessboard">
-  <div class="rank" *ngFor="let row of board">
-    <div
-      *ngFor="let cell of row"
-      class="square"
-      [class.light]="cell.isLight"
-      [class.dark]="!cell.isLight"
-      [class.selected]="cell.isSelected"
-      [class.legal-move]="cell.isLegalMove"
-      draggable="true"
-      (dragstart)="onDragStart($event, cell.square)"
-      (dragover)="onDragOver($event)"
-      (drop)="onDrop($event, cell.square)"
-    >
-      <span class="piece">{{ getPieceSymbol(cell.piece) }}</span>
+<div class="chessboard-container">
+  <!-- Labels colonnes (a-h) en haut -->
+  <div class="column-labels-top">
+    <div class="label-spacer"></div>
+    @for (file of ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']; track file) {
+      <div class="column-label">
+        {{ file }}
+      </div>
+    }
+  </div>
+
+  <!-- Échiquier avec labels de rangées -->
+  <div class="board-with-labels">
+    <!-- Labels rangées (8-1) à gauche -->
+    <div class="row-labels">
+      @for (rank of [8, 7, 6, 5, 4, 3, 2, 1]; track rank) {
+        <div class="row-label">
+          {{ rank }}
+        </div>
+      }
     </div>
+
+    <!-- Le vrai échiquier -->
+    <div class="chessboard">
+      @for (row of board; track row) {
+        <div class="rank">
+          @for (cell of row; track cell.square) {
+            <div
+              class="square"
+              [class.light]="cell.isLight"
+              [class.dark]="!cell.isLight"
+              [class.selected]="cell.isSelected"
+              [class.legal-move]="cell.isLegalMove"
+              draggable="true"
+              (dragstart)="onDragStart($event, cell.square)"
+              (dragover)="onDragOver($event)"
+              (drop)="onDrop($event, cell.square)"
+            >
+              <span class="piece">{{ getPieceSymbol(cell.piece) }}</span>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Labels rangées (8-1) à droite (optionnel) -->
+    <div class="row-labels-right">
+      @for (rank of [8, 7, 6, 5, 4, 3, 2, 1]; track rank) {
+        <div class="row-label">
+          {{ rank }}
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Labels colonnes (a-h) en bas -->
+  <div class="column-labels-bottom">
+    <div class="label-spacer"></div>
+    @for (file of ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']; track file) {
+      <div class="column-label">
+        {{ file }}
+      </div>
+    }
   </div>
 </div>
 
