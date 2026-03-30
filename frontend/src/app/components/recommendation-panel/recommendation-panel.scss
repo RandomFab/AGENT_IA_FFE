@@ -1,0 +1,95 @@
+.recommendation-panel {
+  border: 2px solid #333;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 20px;
+  background: linear-gradient(135deg, #f5f5f5 0%, #ffffff 100%);
+  min-height: 150px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+  h3 {
+    margin: 0 0 10px 0;
+    color: #333;
+    font-size: 1.2rem;
+  }
+
+  p {
+    margin: 5px 0;
+    color: #555;
+    font-size: 1rem;
+  }
+}
+
+// État : Chargement
+.loading-state {
+  text-align: center;
+
+  .spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #3498db;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 15px auto;
+  }
+
+  p {
+    color: #3498db;
+    font-weight: bold;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+}
+
+// État : Erreur
+.error-state {
+  background-color: #ffebee;
+  border-left: 4px solid #f44336;
+  padding: 10px;
+  border-radius: 4px;
+
+  .error-message {
+    color: #c62828;
+    font-weight: bold;
+    margin: 0;
+  }
+}
+
+// État : Données reçues
+.data-state {
+  background-color: #e8f5e9;
+  border-left: 4px solid #4caf50;
+  padding: 10px;
+  border-radius: 4px;
+
+  h3 {
+    color: #2e7d32;
+  }
+
+  .answer {
+    color: #1b5e20;
+    font-weight: bold;
+    font-size: 1.1rem;
+    padding: 10px;
+    background-color: rgba(255, 255, 255, 0.5);
+    border-radius: 4px;
+  }
+}
+
+// État : En attente (rien à faire)
+.idle-state {
+  text-align: center;
+  color: #999;
+  font-style: italic;
+
+  p {
+    margin: 0;
+  }
+}

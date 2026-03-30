@@ -1,1 +1,35 @@
-<p>recommendation-panel works!</p>
+@if (agentService.state$ | async; as state) {
+  <div class="recommendation-panel">
+  
+    <!-- ⏳ ÉTAT 1 : En train de charger -->
+    @if (state.isLoading) {
+        <div class="loading-state">
+        <div class="spinner"></div>
+        <p>L'agent réfléchit à votre position...</p>
+        </div>
+    }
+
+    <!-- ❌ ÉTAT 2 : Erreur -->
+    @if (state.error) {
+        <div class="error-state">
+        <p class="error-message">⚠️ {{ state.error }}</p>
+        </div>
+    }
+
+    <!-- ✅ ÉTAT 3 : Données reçues -->
+    @if (state.data) {
+        <div class="data-state">
+        <h3>💡 Recommandation</h3>
+        <p class="answer">{{ state.data.answer }}</p>
+        </div>
+    }
+
+    <!-- 💬 ÉTAT 4 : Rien (en attente de coup) -->
+    @if (!state.isLoading && !state.data && !state.error) {
+        <div class="idle-state">
+        <p>👈 Jouez un coup pour voir l'analyse</p>
+        </div>
+    }
+
+    </div>
+}

@@ -1,9 +1,14 @@
-import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Component, inject } from '@angular/core';
+import { AgentService } from '../../services/agent.service';
 
 @Component({
   selector: 'app-recommendation-panel',
-  imports: [],
+  standalone:true,
+  imports: [CommonModule],
   templateUrl: './recommendation-panel.html',
   styleUrl: './recommendation-panel.scss',
 })
-export class RecommendationPanel {}
+export class RecommendationPanel {
+  public agentService = inject(AgentService);
+}
