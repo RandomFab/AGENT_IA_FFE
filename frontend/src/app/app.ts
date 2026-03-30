@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ViewChild } from '@angular/core';
 import { Chessboard } from './components/chessboard/chessboard';
 import { RecommendationPanel } from "./components/recommendation-panel/recommendation-panel";
 import { AgentService } from './services/agent.service';
@@ -11,10 +11,15 @@ import { AgentService } from './services/agent.service';
   styleUrl: './app.scss'
 })
 export class AppComponent {
+  @ViewChild(Chessboard) chessboard!: Chessboard;
   private agentService = inject(AgentService);
 
   onFenChange(newFen: string): void {
     console.log('FEN changed in AppComponent:', newFen);
     this.agentService.analysePosition(newFen);
+  }
+
+  onReset(): void {
+    this.chessboard.reset();
   }
 }

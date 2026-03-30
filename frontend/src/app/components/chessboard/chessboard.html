@@ -43,7 +43,7 @@
       }
     </div>
 
-    <!-- Labels rangées (8-1) à droite (optionnel) -->
+    <!-- Labels rangées (8-1) à droite -->
     <div class="row-labels-right">
       @for (rank of [8, 7, 6, 5, 4, 3, 2, 1]; track rank) {
         <div class="row-label">
@@ -62,11 +62,10 @@
       </div>
     }
   </div>
-</div>
 
-<div class="fen-display">
-  <label>FEN :</label>
-  <span>{{ getFen() }}</span>
+  <!-- FEN affichage -->
+  <div class="fen-display">
+    <label>FEN:</label>
+    <span>{{ getFen() }}</span>
+  </div>
 </div>
-
-<button (click)="reset()">Reset</button>
