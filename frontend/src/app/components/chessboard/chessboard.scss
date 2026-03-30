@@ -1,0 +1,130 @@
+// Conteneur principal
+.chessboard-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+// Labels colonnes (a-h) en haut et en bas
+.column-labels-top,
+.column-labels-bottom {
+  display: flex;
+  gap: 0;
+
+  .label-spacer {
+    width: 40px;
+    height: 20px;
+  }
+
+  .column-label {
+    width: 80px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+    font-size: 16px;
+    font-family: inherit;
+    color: #888;
+  }
+}
+
+.column-labels-bottom {
+  margin-top: 4px;
+}
+
+// Conteneur échiquier + labels rangées
+.board-with-labels {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+// Labels rangées (1-8) à gauche et à droite
+.row-labels,
+.row-labels-right {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+
+  .row-label {
+    width: 40px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+    font-size: 16px;
+    font-family: inherit;
+    color: #888;
+  }
+}
+
+.row-labels-right {
+  margin-left: 4px;
+}
+
+// L'échiquier principal
+.chessboard {
+  display: inline-grid;
+  grid-template-rows: repeat(8, 1fr);
+  border: 2px solid #333;
+  width: 640px;
+  height: 640px;
+  background-color: #1a1a1a;
+}
+
+.rank {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+}
+
+.square {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  font-size: 3.5rem;
+  position: relative;
+  width: 80px;
+  height: 80px;
+  user-select: none;
+
+  &.light { background-color: #C8A882; }
+  &.dark  { background-color: #6B5345; }
+  
+  &.selected {
+    background-color: #4a5f3f !important;
+  }
+  
+  &.legal-move::after {
+    content: '';
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba(74, 95, 63, 0.4);
+  }
+}
+
+.piece {
+  user-select: none;
+  pointer-events: none;
+  color: #000000
+}
+
+// FEN affichage
+.fen-display {
+  margin-top: 12px;
+  font-size: 16px;
+  font-family: inherit;
+  word-break: break-all;
+  color: #999;
+
+  label {
+    font-weight: 600;
+    margin-right: 8px;
+    color: #bbb;
+  }
+}

@@ -1,0 +1,116 @@
+.recommendation-panel {
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 20px;
+  background: #1a1a1a;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  overflow-y: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  h3 {
+    margin: 0 0 16px 0;
+    color: #e0e0e0;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+
+  p {
+    margin: 8px 0;
+    color: #aaa;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+}
+
+// État : Chargement
+.loading-state {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+
+  .spinner {
+    border: 3px solid #2a2a2a;
+    border-top: 3px solid #4a95ff;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    animation: spin 0.8s linear infinite;
+  }
+
+  p {
+    color: #888;
+    font-weight: 500;
+    font-size: 13px;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+}
+
+// État : Erreur
+.error-state {
+  background-color: #2a1a1a;
+  border-left: 3px solid #ff6b6b;
+  padding: 12px;
+  border-radius: 4px;
+
+  .error-message {
+    color: #ff9999;
+    font-weight: 500;
+    margin: 0;
+    font-size: 13px;
+  }
+}
+
+// État : Données reçues
+.data-state {
+  // background-color: #1a2a1a;
+  border-left: 3px solid #2a2a2a;
+  padding: 12px;
+  border-radius: 4px;
+
+  h3 {
+    color: #e0e0e0;
+  }
+
+  .answer {
+    color: #e0e0e0;
+    font-weight: 500;
+    font-size: 13px;
+    padding: 12px;
+    // background-color: rgba(76, 175, 80, 0.1);
+    border-radius: 4px;
+    line-height: 1.6;
+    margin: 0;
+  }
+}
+
+// État : En attente (rien à faire)
+.idle-state {
+  text-align: center;
+  color: #666;
+  font-style: italic;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 150px;
+
+  p {
+    margin: 0;
+    font-size: 13px;
+    color: #777;
+  }
+}

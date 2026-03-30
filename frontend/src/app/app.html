@@ -1,0 +1,11 @@
+<div class="app-container">
+  <div class="left-column">
+    <div class="chessboard-wrapper">
+      <app-chessboard (fenChange)="onFenChange($event)"></app-chessboard>
+    </div>
+    <button class="reset-button" (click)="onReset()">Reset</button>
+  </div>
+  <div class="right-column">
+    <app-recommendation-panel></app-recommendation-panel>
+  </div>
+</div>
