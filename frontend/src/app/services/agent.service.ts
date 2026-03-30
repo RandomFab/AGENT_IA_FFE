@@ -9,6 +9,8 @@ import { ApiService } from "./api.service";
 export class AgentService {
     private api = inject(ApiService);
 
+    private readonly INITIAL_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+
     private analyzeRequest$ = new Subject<string>();
 
     private state = new BehaviorSubject<RequestState<AgentOutput>>({
@@ -26,6 +28,16 @@ export class AgentService {
 
     analysePosition(fen: string): void {
         console.log('Analyzing position with FEN:', fen);
+    if (fen === this.INITIAL_FEN) {
+      console.log('Position initiale détectée, skip analyse');
+      // Réinitialiser l'état
+      this.state.next({
+        data: null,
+        isLoading: false,
+        error: null
+      });
+      return;
+    }        
         this.analyzeRequest$.next(fen);
     }
 
