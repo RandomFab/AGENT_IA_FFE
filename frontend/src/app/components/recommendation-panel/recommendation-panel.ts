@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { AgentService } from '../../services/agent.service';
+import { marked } from 'marked';
 
 @Component({
   selector: 'app-recommendation-panel',
@@ -11,4 +12,8 @@ import { AgentService } from '../../services/agent.service';
 })
 export class RecommendationPanel {
   public agentService = inject(AgentService);
+
+  parseMarkdown(markdown: string): string {
+    return marked(markdown) as string;
+  }
 }
