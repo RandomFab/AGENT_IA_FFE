@@ -19,9 +19,9 @@
   font-size: 2.5rem;
   position: relative;
 
-  &.light { background-color: #97eecc; }
-  &.dark  { background-color: #337408; }
-  &.selected { background-color: #101b12 !important; }
+  &.light { background-color: #D4A574; }
+  &.dark  { background-color: #7B5A47; }
+  &.selected { background-color: #000000 !important; }
   &.legal-move::after {
     content: '';
     position: absolute;
