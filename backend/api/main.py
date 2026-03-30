@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from contextlib import asynccontextmanager
 from backend.api.routes import router
@@ -67,6 +68,16 @@ api = FastAPI(
     version="1.0.0",
     openapi_tags=tags_metadata,
     lifespan=lifespan
+)
+
+# --- CORS middleware ---
+
+api.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:4200"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"]
 )
 
 
