@@ -52,8 +52,8 @@ services:
   # Backend - FastAPI
   api:
     build:
-      context: .
-      dockerfile: Backend/Dockerfile
+      context: ./backend
+      dockerfile: Dockerfile
     container_name: fastapi_ffe
     ports:
       - "${API_PORT}:8000"
@@ -71,17 +71,18 @@ services:
     networks:
       - ffe_network
 
-  # # Frontend - Angular
-  # frontend:
-  #   build:
-  #     context: ./frontend
-  #   container_name: angular_ffe
-  #   ports:
-  #     - "4200:4200"
-  #   depends_on:
-  #     - api
-  #   networks:
-  #     - ffe_network
+  # Frontend - Angular
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: angular_ffe
+    ports:
+      - "4200:4200"
+    depends_on:
+      - api
+    networks:
+      - ffe_network
 
 networks:
   ffe_network:
