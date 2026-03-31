@@ -1,6 +1,6 @@
 import os
 from pydantic import BaseModel, Field,field_validator
-from backend.services.validation_chess_service import validate_position
+from services.validation_chess_service import validate_position
 from datetime import datetime
 
 class YoutubeVideoInput(BaseModel):

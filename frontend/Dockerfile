@@ -1,7 +1,7 @@
 # Stage 1: Build
 FROM node:22-alpine AS builder
 
-WORKDIR /app
+WORKDIR /frontend
 
 # Copier les fichiers de dépendances
 COPY package*.json ./

@@ -1,6 +1,6 @@
 from langgraph.graph import StateGraph, START, END
-from backend.graph.state import AgentState
-from backend.graph.nodes import node_stockfish, node_lichess, node_format_response,node_wikipedia_search, node_youtube_search
+from graph.state import AgentState
+from graph.nodes import node_stockfish, node_lichess, node_format_response,node_wikipedia_search, node_youtube_search
 
 
 workflow = StateGraph(AgentState)

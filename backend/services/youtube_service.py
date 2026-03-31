@@ -2,7 +2,7 @@ import os
 import requests
 from typing import List
 from dotenv import load_dotenv
-from backend.schemas.youtube_schema import YoutubeVideoOutput
+from schemas.youtube_schema import YoutubeVideoOutput
 
 # Charger les variables d'environnement du fichier .env
 load_dotenv()

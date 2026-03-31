@@ -1,7 +1,7 @@
 from pydantic import BaseModel,Field, field_validator, model_validator
 from typing import Optional
 import os
-from backend.services.validation_chess_service import validate_position, validate_move
+from services.validation_chess_service import validate_position, validate_move
 
 class StockfishInput(BaseModel):
     """Schéma de validation pour une requête d'évaluation Stockfish."""

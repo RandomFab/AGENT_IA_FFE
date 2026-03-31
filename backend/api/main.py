@@ -2,9 +2,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from contextlib import asynccontextmanager
-from backend.api.routes import router
+from api.routes import router
 
-from backend.services.rag_service import ingest_chess_openings_to_milvus, is_milvus_collection_exists, get_embedding_model
+from services.rag_service import ingest_chess_openings_to_milvus, is_milvus_collection_exists, get_embedding_model
 
 from config.config import WIKIPEDIA_OPENING_CHESS_URLS
 from config.logger import logger

@@ -1,12 +1,12 @@
 # --- import ---
-from backend.graph.state import AgentState
-from backend.services.lichess_service import evaluate_opening
-from backend.services.stockfish_service import evaluate_position
-from backend.services.rag_service import retrieve_articles
-from backend.services.youtube_service import get_ytb_video
-from backend.services.format_service import format_llm_response
-from backend.schemas.lichess_schema import LichessOpeningWithGamesResponse
-from backend.schemas.stockfish_schema import StockfishEvaluationResponse
+from graph.state import AgentState
+from services.lichess_service import evaluate_opening
+from services.stockfish_service import evaluate_position
+from services.rag_service import retrieve_articles
+from services.youtube_service import get_ytb_video
+from services.format_service import format_llm_response
+from schemas.lichess_schema import LichessOpeningWithGamesResponse
+from schemas.stockfish_schema import StockfishEvaluationResponse
 
 from config.logger import logger
 

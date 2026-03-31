@@ -1,18 +1,18 @@
 from fastapi import APIRouter
 
-from backend.services.lichess_service import evaluate_opening
-from backend.services.stockfish_service import evaluate_position
-from backend.services.rag_service import retrieve_articles
-from backend.services.youtube_service import get_ytb_video
+from services.lichess_service import evaluate_opening
+from services.stockfish_service import evaluate_position
+from services.rag_service import retrieve_articles
+from services.youtube_service import get_ytb_video
 
-from backend.schemas.lichess_schema import LichessOpeningWithGamesResponse, LichessInput
-from backend.schemas.stockfish_schema import StockfishEvaluationResponse, StockfishInput
-from backend.schemas.agent_schema import AgentInput, AgentOutput
-from backend.schemas.rag_schema import RAGSearchInput,RAGSearchResult
-from backend.schemas.youtube_schema import YoutubeVideoOutput, YoutubeVideoInput
+from schemas.lichess_schema import LichessOpeningWithGamesResponse, LichessInput
+from schemas.stockfish_schema import StockfishEvaluationResponse, StockfishInput
+from schemas.agent_schema import AgentInput, AgentOutput
+from schemas.rag_schema import RAGSearchInput,RAGSearchResult
+from schemas.youtube_schema import YoutubeVideoOutput, YoutubeVideoInput
 
-from backend.graph.state import AgentState
-from backend.graph.agent import app
+from graph.state import AgentState
+from graph.agent import app
 
 
 router = APIRouter(prefix="/api/v1")
