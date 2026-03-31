@@ -22,7 +22,7 @@ FROM nginx:alpine
 COPY nginx.conf /etc/nginx/nginx.conf
 
 # Copier les fichiers buildés depuis le stage précédent
-COPY --from=builder /app/dist/frontend/browser /usr/share/nginx/html
+COPY --from=builder /frontend/dist/frontend/browser /usr/share/nginx/html
 
 EXPOSE 4200
 

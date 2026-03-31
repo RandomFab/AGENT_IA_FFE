@@ -55,6 +55,10 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: fastapi_ffe
+    env_file:
+      - path: .env
+        required: false
+
     ports:
       - "${API_PORT}:8000"
     environment:
