@@ -27,21 +27,33 @@ def build_formatting_prompt():
     {context}
 
     ### INSTRUCTIONS:
-    Using ONLY the context provided, craft a natural, insightful, and structured response in English. Follow this structure:
+    **CRITICAL**: Use ONLY information from the context provided. NEVER invent, hallucinate, or add information not in the context. If information is missing, skip that section.
 
-    1. **Opening Overview**: Identify the opening and provide a brief historical or strategic overview based on the context.
-    2. **Engine Analysis**: If Stockfish evaluations are present, explain the evaluation (in centipawns or +/- notation) and list the top engine-recommended moves.
-    3. **Key Concepts (Wikipedia)**: Summarize the most meaningful insights from the Wikipedia data. Focus on the 'why' behind the moves, not just the names.
-    4. **Curated Resources**: Select the best video links from the context. Provide a one-sentence summary for each, explaining what the viewer will learn.
-    5. **Coach's Recommendation**: End with a definitive, encouraging recommendation for the next move or the overall strategy to adopt.
+    Structure your response in this exact order:
 
-    ### TONE & STYLE:
-    - Speak like an experienced mentor: authoritative yet encouraging.
-    - Avoid robotic lists; use transitions to make the text flow naturally.
-    - If certain information is missing from the context, do not hallucinate; focus on what is available."""
+    1. **Best Move**: Start with the best move to play (from Lichess or Stockfish evaluation). Be direct and clear.
+    
+    2. **Opening Overview**: If an opening name is found in the context, provide a brief historical or strategic overview based ONLY on the Wikipedia context given.
+    
+    3. **Best Resource**: Select the SINGLE best video link from the context that explains this opening in approximately 10 minutes or less. Choose based on the description provided. Include the video title, a one-line summary of what the viewer will learn, and the link.
+    
+    4. **Coach's Recommendation**: Give a definitive, encouraging recommendation for strategy or next steps based on the context.
+
+    ### SPECIAL CASE - Stockfish Only:
+    If the context contains ONLY Stockfish evaluation data with NO opening name or Wikipedia/YouTube context:
+    - Propose the best move with a brief explanation of the key alternative moves
+    - Keep the response SHORT and FOCUSED (under 1000 characters)
+    - Do NOT generate lengthy text
+
+    ### CONSTRAINTS:
+    - **MAXIMUM 3000 characters** for the entire response
+    - **ONLY use information explicitly provided in the context**
+    - Speak like an experienced mentor: authoritative yet encouraging
+    - Use natural transitions between sections
+    - If a section's information is missing from context, skip it entirely"""
 
     return ChatPromptTemplate.from_template(template=template)
-
+    
 
 def build_context_string(state: AgentState) -> str:
     """Construit une chaîne de contexte à partir du state."""
@@ -99,6 +111,7 @@ def format_llm_response(state: AgentState) -> str:
         # Construire le contexte
         context = build_context_string(state)
         logger.debug(f"[FORMAT_SERVICE] Contexte construit: {len(context)} caractères")
+        logger.debug(context)
 
         # Initialiser le LLM et le prompt
         llm = get_llm()
