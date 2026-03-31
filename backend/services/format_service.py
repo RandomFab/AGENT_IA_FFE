@@ -46,11 +46,13 @@ def build_formatting_prompt():
     - Do NOT generate lengthy text
 
     ### CONSTRAINTS:
-    - **MAXIMUM 3000 characters** for the entire response
+    - **MAXIMUM 4000 characters** for the entire response
     - **ONLY use information explicitly provided in the context**
     - Speak like an experienced mentor: authoritative yet encouraging
     - Use natural transitions between sections
-    - If a section's information is missing from context, skip it entirely"""
+    - If a section's information is missing from context, skip it entirely
+    - Generate an well structured MarkDown response with clear headings for each section, with space, hard returns, bullet lists, tabulations, bold text and italics where appropriate to enhance readability and engagement. 
+    """
 
     return ChatPromptTemplate.from_template(template=template)
     
