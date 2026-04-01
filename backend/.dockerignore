@@ -1,0 +1,20 @@
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.coverage
+htmlcov/
+tests/
+data/
+logs/
+.git/
+.vscode/
+
+# Fichiers de configuration et environnement
+.env
+.env.*
+Dockerfile
+.dockerignore
+docker-compose.yml
