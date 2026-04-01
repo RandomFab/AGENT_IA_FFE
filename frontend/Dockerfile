@@ -24,6 +24,6 @@ COPY nginx.conf /etc/nginx/nginx.conf
 # Copier les fichiers buildés depuis le stage précédent
 COPY --from=builder /frontend/dist/frontend/browser /usr/share/nginx/html
 
-EXPOSE 4200
+EXPOSE 80
 
 CMD ["nginx", "-g", "daemon off;"]
