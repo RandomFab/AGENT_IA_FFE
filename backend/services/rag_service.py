@@ -6,7 +6,7 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from sentence_transformers import SentenceTransformer
 from pymilvus import MilvusClient
 
-from backend.schemas.rag_schema import RAGSearchResult
+from schemas.rag_schema import RAGSearchResult
 
 from config.logger import logger
 from config.config import INDEX_WIKIPEDIA_DIR

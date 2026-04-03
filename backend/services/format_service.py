@@ -5,7 +5,7 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_mistralai import ChatMistralAI
 
 from config.logger import logger
-from backend.graph.state import AgentState
+from graph.state import AgentState
 
 # --- Initialisation du LLM ---
 
