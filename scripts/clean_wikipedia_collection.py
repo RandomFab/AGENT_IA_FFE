@@ -5,7 +5,7 @@ Script pour nettoyer la collection Milvus 'chess_openings'.
 import os
 from dotenv import load_dotenv
 from pymilvus import connections, utility
-from config.logger import logger
+from backend.config.logger import logger
 
 load_dotenv()
 
