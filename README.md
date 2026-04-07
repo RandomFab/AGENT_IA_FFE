@@ -245,6 +245,8 @@ En complément du POC, une étude a été menée sur un système de **recherche 
 
 > Cette architecture permettrait de remplacer la simple recherche textuelle YouTube par une recherche sémantique et visuelle sur un catalogue interne de vidéos pédagogiques.
 
+📖 **[Lire l'étude de faisabilité complète →](ETUDE_DE_FAISABILITE.md)**
+
 ---
 
 ## 👤 Auteur
