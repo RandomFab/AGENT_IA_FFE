@@ -35,20 +35,20 @@ Un schéma d'architecture conceptuel illustrant les flux de données de la base 
 ```mermaid
 graph TD;
     subgraph "Pipeline d'Ingestion (Back-end)"
-        A[API YouTube] -->|Téléchargement Vidéos| B(Workers FFmpeg - Extraction Frames)
+        A(API YouTube) -->|Téléchargement Vidéos| B(Workers FFmpeg - Extraction Frames)
         B --> C{Moteur IA Vision}
-        C -->|YOLO : Détection Echiquier| D[Extraction Pièces CNN]
-        D -->|Génération| E[Chaînes FEN]
+        C -->|YOLO : Détection Echiquier| D(Extraction Pièces CNN)
+        D -->|Génération| E(Chaînes FEN)
         E -->|Déduplication| F[(Base de Données - FEN/Timestamps)]
     end
 
-    subgraph "Couche Interrogation Contextuelle (MCP)"
-        F <-->|Requêtes SQL/NoSQL| G[Serveur MCP]
+    subgraph "MCP"
+        F <-->|Requêtes SQL/NoSQL| G(Serveur MCP)
         G -->|Tool: search_video_by_fen| H([Agent IA / LLM])
     end
 
     subgraph "Utilisateur Final"
-        H <-->|Requête Utilisateur: Je cherche cette position| I[Interface Application]
+        H <-->|Requête Utilisateur: Je cherche cette position| I(Interface Application)
     end
 ```
 ---
@@ -82,31 +82,54 @@ Le téléchargement et l'analyse en masse peuvent enfreindre les conditions d'ut
 
 ## III. ETUDE DE FAISABILITE ET ESTIMATION DES COÛTS
 
-Le budget s'articule autour de l'investissement initial de construction de l'architecture et des coûts récurrents.
+Le budget s'articule autour de l'investissement initial de construction de l'architecture (CAPEX) et des coûts récurrents (OPEX). Ce dimensionnement est calculé sur une base cible d'ingestion de **2 heures de vidéo par jour**.
 
 ### A. Coûts de Développement et de Mise en Place (CAPEX)
-L'investissement de démarrage (Build) englobe :
+L'investissement de démarrage (Build) est estimé pour un développement continu de **3 mois** (environ 60 jours ouvrés par profil).
+
 - **Ressources Humaines :**
-  - 1 Lead Data Scientist / Ingénieur Vision : Confection, entraînement et fine-tuning du modèle Board-to-FEN.
-  - 1 Data Engineer / Dev Backend : Construction du pipeline de données, de l'infrastructure, et du Serveur MCP d'interfaçage.
-- **Création du Dataset d'Entraînement :**  
-Collecte, nettoyage et annotation manuelle/semi-automatique d'un volume de données d'images d'échiquier nécessaires à l'apprentissage du modèle YOLO/CNN.
+  - 1 Data Scientist / Ingénieur Vision (350 €/j) : Confection, entraînement et optimisation du modèle Board-to-FEN. → **21 000 €**
+  - 1 Data Engineer / Dev Backend (370 €/j) : Construction du pipeline de données (workers), de l'infrastructure cloud, et du Serveur MCP. → **22 200 €**
+  - *Total RH* : **43 200 €**
 - **Infrastructure ML initiale :**  
-Instances cloud pour l'entraînement des modèles (ex: AWS EC2 instances P4/G4).
+  Instances cloud pour l'entraînement des modèles (ex: AWS EC2 instances P4/G4). → **~2 000 € (provision)**
 
-*La phase de Build représente l'essentiel de la complexité technique et nécessite entre 2 à 4 mois de temps de développement continu.*
+**Bilan CAPEX estimé : ~45 200 €**
 
-### B. Coûts d'Exploitation, Hébergement et Maintenance (OPEX)
-- **Coût d'ingestion (€/minute de vidéo) :**  
-C'est la métrique clé. Traiter continuellement de nouvelles vidéos via les workers nécessite des machines GPU dédiées (ex. serveurs AWS G4dn). Le coût fluctue en fonction du volume horaire traité.
-- **Coût d'Infrastructure Serveur :**  
-Hébergement continu de l'API du serveur MCP (coût marginal, très léger) et de l'infrastructure de la Base de Données d'index.
-- **Coûts API YouTube :**  
-Potentiel coût de l'API Data si le volume de requêtes dépasse les quotas gratuits, avec surcoûts éventuels pour le scraping qualifié.
-- **Coût de stockage en Base de Données :**  
-Le texte pour stocker :  
-`FEN` | `Timestamp` | `Link`  , est extrêmement léger.  
-L'OPEX sur la base de données ne devrait représenter que quelques dizaines d'euros par mois, même avec des millions d'entrées.
+### B. Performances du Pipeline d'Ingestion
+Pour traiter 1 minute de vidéo (à 1 fps, soit 60 images), le pipeline se décompose ainsi :
+1. **FFmpeg (Extraction) :** 3–5 s (CPU 8 vCPU) — *Goulot d'étranglement principal mais parallélisable.*
+2. **Détection d'échiquier (YOLO / contours) :** ~1 s (GPU T4, batch de 60).
+3. **Board-to-FEN (CNN) :** 1–3 s (GPU T4, batch de 60).
+4. **Déduplication FEN :** < 0,1 s (CPU).
+5. **Écriture BD :** < 0,1 s (Réseau/DB).
+
+**Ratio de traitement mensuel :** Sans optimisation extrême (pipeline naïf), le traitement prend de 5 à 8 secondes par minute de vidéo (vitesse 8x). Pour traiter **120 minutes de vidéo par jour**, le temps d'exécution GPU réel sera d'environ **15 à 20 minutes par jour**. Le traitement des données sera donc un processus très rapide et économe.
+
+### C. Coûts d'Exploitation, Hébergement et Maintenance (OPEX)
+Sur la base du traitement cible (2h/jour) et des performances du pipeline, les coûts d'infrastructure sont fortement limités.
+
+- **1. Coût d'ingestion (Workers GPU - AWS G4dn) :**  
+  - Instance recommandée : **g4dn.2xlarge** (1× T4 16 Go) à ~0,75 $/h (On-Demand).
+  - Pour ~20 min de sollicitation par jour, l'instance sera allumée dynamiquement. 
+  - Coût d'exécution : environ 10 heures/mois * 0,75 $.
+  - **Coût estimé : ~7,50 $/mois**
+
+- **2. Serveur d'API MCP (AWS EC2) :**
+  - Instance recommandée : **t3.medium** (2 vCPU / 4 Go). C'est un composant léger répondant à de simples requêtes d'index.
+  - **Coût estimé : ~30 $/mois.**
+
+- **3. Base de Données  :**  
+  - Stockage minime (`FEN` | `Timestamp` | `Link` pèse ~200-300 octets. 10 millions d'entrées ≈ 2-3 Go).
+  - Instance recommandée : **db.t3.small + 20 Go stockage SSD gp3**.
+  - **Coût estimé : ~25 à ~30 $/mois.**
+
+- **4. Coûts API YouTube (Data v3) :**
+  - Modèle 100% basé sur quotas (10 000 unités/jour gratuites).
+  - Il n'y a pas de tarification de dépassement ; seul un relèvement de quota (gratuit, sur dossier auprès de Google) est appliqué.
+  - **Coût estimé : 0 $.**
+
+**Bilan OPEX (infrastructure) estimé : ~70 $ / mois (≈ 65 € / mois).**
 
 ---
 
